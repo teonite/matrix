@@ -15,7 +15,7 @@ element_web_tls_file_path="./config/tls-secret.yaml" # Element's tls path
 
 # Synapse
 synapse_deployment_name="matrix-synapse" # Synapse's deployment name
-synapse_namespace="default" # Synapse's depolyment namesapce name
+synapse_namespace="hehe" # Synapse's depolyment namesapce name
 
 synapse_values_path="./config/synapse.yaml"  # Synapse's values path
 
@@ -53,7 +53,7 @@ synapse_values_path="./config/synapse.yaml"  # Synapse's values path
     
     # deployment
     telegram_deployment_name="mautrix-telegram" # mautrix-telegram's deployment name
-    telegram_namespace="hehe" # mautrix-telegram's depolyment namesapce name
+    telegram_namespace="default" # mautrix-telegram's depolyment namesapce name
     telegram_deployment_values_file_path="./config/telegram/values.yaml" # mautrix-telegram's values path
 
 # Exporting all variables so makefile can use them

@@ -652,10 +652,11 @@ config:
         #        * - All Matrix users
         #   domain - All users on that synapse server
         #     mxid - Specific user
+        # ( Change )
         permissions:
-            '*': user
+            # '*': user
             # public.openearth.space: user
-            # openearth.space: full
+            openearth.space: full
             # '@admin:openearth.space': admin
         relaybot:
             private_chat:
@@ -686,10 +687,10 @@ config:
             - 12345678
     telegram:
         # Get your own API keys at https://my.telegram.org/apps ( Change )
-        api_id: 22777945
-        api_hash: 77665a1d7ce2290aa97dbeea81a40a0e 
+        api_id: <api_id>
+        api_hash: <api_hash> 
         # (Optional) Create your own bot at https://t.me/BotFather ( Change )
-        bot_token: 5947215435:AAGHe63E0IDU_nrQmhmKrfZf5iQlOApeeII
+        bot_token: <bot_token>
 
         # Should the bridge request missed updates from Telegram when restarting?
         catch_up: true
