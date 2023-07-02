@@ -26,7 +26,7 @@ synapse_namsepace:
 		@kubectl get namespace ${synapse_namespace} > /dev/null 2>&1 || (echo "Namespace '${synapse_namespace}' does not exist, creating...";  kubectl create namespace ${synapse_namespace})
 
 # Synapse installation
-install_synapse_blank: check_dependencies create_hookshot_registration_file create_telegram_registration_file install_telegram 
+install_synapse_blank: check_dependencies postql_ingress create_hookshot_registration_file create_telegram_registration_file install_telegram 
 	cp ${synapse_values_path} ./ananace/charts/matrix-synapse/values.yaml
 	@cd ./ananace/charts/matrix-synapse && \
 	if [ ! -f "charts/postgresql/Chart.yaml" ] || [ ! -f "charts/redis/Chart.yaml" ]; then \
@@ -34,6 +34,13 @@ install_synapse_blank: check_dependencies create_hookshot_registration_file crea
 	fi
 	cd ./ananace/charts/matrix-synapse/ && helm install ${synapse_deployment_name} . --values=values.yaml  -n ${synapse_namespace}
 	kubectl rollout status deployment ${synapse_deployment_name} -n ${synapse_namespace}
+
+# Postsql ingress
+postql_ingress: synapse_namsepace
+	@test -f ${hookshot_ingress_file_path} && \
+	(kubectl apply -f ${hookshot_ingress_file_path})|| \
+	(echo "File '${hookshot_ingress_file_path}' does not exist."; exit 1)
+
 
 # Check all required registration files
 check_registration_files:
@@ -93,11 +100,11 @@ install_hookshot: create_hookshot_ingress create_hookshot_config_file
 
 # mautrix-telegram database create
 create_telegram_database: check_dependencies
-	POSTGRES_POD=$$(kubectl get pods -n $(postgresq_namespace) -o json | jq -r '.items[] | select(.metadata.name | contains("postgresql")).metadata.name'); \
+	POSTGRES_POD=$$(kubectl get pods -n $(synapse_namespace) -o json | jq -r '.items[] | select(.metadata.name | contains("postgresql")).metadata.name'); \
 	if [ -z "$$POSTGRES_POD" ]; then \
 		echo "Cannot create database. PostgreSQL pod not found. Follow steps in README.md/#mautrix-telegram-database"; \
 	else \
-		kubectl -n $(postgresq_namespace) exec -it $$POSTGRES_POD -- bash -c 'PGPASSWORD=$(postgresq_admin_password) psql -U $(postgresq_admin_username) --command="CREATE DATABASE $(postgresq_telegram_database_name);"'; \
+		kubectl -n $(synapse_namespace) exec -it $$POSTGRES_POD -- bash -c 'PGPASSWORD=$(postgresql_admin_password) psql -U $(postgresql_admin_username) --command="CREATE DATABASE $(postgresql_telegram_database_name);"'; \
 		echo "Created database!"; \
 	fi
 
@@ -122,7 +129,7 @@ check_telegram_registration_file:
 telegram_namsepace:
 		@kubectl get namespace ${telegram_namespace} > /dev/null 2>&1 || (echo "Namespace '${telegram_namespace}' does not exist, creating...";  kubectl create namespace ${telegram_namespace})
 
-
+# mautrix-telegram installation
 install_telegram: check_telegram_registration_file telegram_namsepace
 	$(eval RELEASE_EXIST := $(shell helm list -q | grep -Fx ${telegram_deployment_name}))
 	$(if $(RELEASE_EXIST), \
@@ -130,7 +137,3 @@ install_telegram: check_telegram_registration_file telegram_namsepace
 		cp ${telegram_deployment_values_file_path} ./mautrix-telegram/values.yaml && \
 		cd ./mautrix-telegram && helm install ${telegram_deployment_name} . --values=values.yaml  -n ${telegram_namespace} \
 	)
-
-
-# POSTGRESS INGRESS
-

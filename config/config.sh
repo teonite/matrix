@@ -15,7 +15,7 @@ element_web_tls_file_path="./config/tls-secret.yaml" # Element's tls path
 
 # Synapse
 synapse_deployment_name="matrix-synapse" # Synapse's deployment name
-synapse_namespace="hehe" # Synapse's depolyment namesapce name
+synapse_namespace="default" # Synapse's depolyment namesapce name
 
 synapse_values_path="./config/synapse.yaml"  # Synapse's values path
 
@@ -41,21 +41,20 @@ synapse_values_path="./config/synapse.yaml"  # Synapse's values path
 
 # Telegram
     # database, we need to connect to databse to create new database for telegram integration
-    postgresq_namespace="hehe"
-    postgresq_admin_username="synapse"
-    postgresq_admin_password="synapse"
-    postgresq_telegram_database_name="mautrixtelegramdatabase"
+    postgresql_admin_username="synapse" # postgresql admin username
+    postgresql_admin_password="synapse" # postgresql admin password
+    postgresql_telegram_database_name="mautrixtelegram" # postgresql database ( mautrix-telegram will use this database )
 
+    postgresql_namespace="default" # postgresql's depolyment namesapce name
+    postgresql_ingress_path="./config/postgresql-ingress.yaml" # postgresql's ingress file
+    
     # registration file
-    telegram_registration_values_path="./config/telegram/registration.yml" # Hookshot's registration file path
+    telegram_registration_values_path="./config/telegram/registration.yml" # mautrix-telegram's registration file path
     
     # deployment
-    telegram_deployment_name="mautrix-telegram"
-    telegram_namespace="hehe"
-    telegram_deployment_values_file_path="./config/telegram/values.yaml"
-
-# zmienic hehe na deafult
-
+    telegram_deployment_name="mautrix-telegram" # mautrix-telegram's deployment name
+    telegram_namespace="default" # mautrix-telegram's depolyment namesapce name
+    telegram_deployment_values_file_path="./config/telegram/values.yaml" # mautrix-telegram's values path
 
 # Exporting all variables so makefile can use them
 export $(set -o posix; set) 

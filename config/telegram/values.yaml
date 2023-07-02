@@ -75,7 +75,7 @@ ingress:
   hosts:
     - host: openearth.space
       paths: 
-        - path: /mautrix-telegram
+        - /mautrix-telegram
       
   # TLS configuration for appservice ingress
   tls: []
@@ -112,7 +112,7 @@ config:
     # synapse server details
     synapse server:
         #  The address that this appservice can use to connect to the synapse server. ( Change )
-        address: http://10.110.108.198:8008
+        address: https://openearth.space:8008
         # The domain of the synapse server (for MXIDs, etc).  ( Change )
         domain: openearth.space
         # Whether or not to verify the SSL certificate of the synapse server.
@@ -154,8 +154,8 @@ config:
         # Format examples:
         #   SQLite:   sqlite:filename.db
         #   Postgres: postgres://username:password@hostname/dbname
-        # Database name must match postgresq_telegram_database_name in config.shh
-        database: postgres://synapse:synapse@10.108.231.96:5432/mautrixtelegramdatabase
+        #  Database name must match postgresq_telegram_database_name in config.shh
+        database: postgres://<username>:<password>@openearth.space:5432/mautrixtelegram
         # Additional arguments for asyncpg.create_pool() or sqlite3.connect()
         # https://magicstack.github.io/asyncpg/current/api/index.html#asyncpg.pool.create_pool
         # https://docs.python.org/3/library/sqlite3.html#sqlite3.connect
@@ -171,7 +171,7 @@ config:
             prefix: /public
             # The base URL where the public-facing endpoints are available. The prefix is not added
             # implicitly.
-            external: http://openearth.space/public
+            external: https://openearth.space/public
 
         # Provisioning API part of the web server for automated portal creation and fetching information.
         # Used by things like mautrix-manager (https://github.com/tulir/mautrix-manager).
@@ -309,7 +309,7 @@ config:
         sync_direct_chat_list: false
         # Servers to always allow double puppeting from
         double_puppet_server_map:
-            openearth.space: http://openearth.space
+            openearth.space: https://openearth.space
         double_puppet_allow_discovery: false
         # Shared secrets for https://github.com/devture/matrix-synapse-shared-secret-auth
         #
@@ -795,15 +795,14 @@ registration:
     namespaces:
         users:
         - exclusive: true
-        regex: '@telegram_.*:openearth\.space'
+          regex: '@telegram_.*:openearth\.space'
         - exclusive: true
-        regex: '@telegrambot:openearth\.space'
+          regex: '@telegrambot:openearth\.space'
         aliases:
         - exclusive: true
-        regex: \#telegram_.*:openearth\.space
-    url: http://10.97.28.151:29317
+          regex: \#telegram_.*:openearth\.space
+    url: https://openearth.space/mautrix-telegram
     sender_localpart: telegram
     rate_limited: false
     de.sorunome.msc2409.push_ephemeral: true
     push_ephemeral: true
-
