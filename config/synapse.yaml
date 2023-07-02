@@ -127,6 +127,7 @@ useStructuredLogging: false
 extraConfig:
   app_service_config_files:
     - /synapse/config/hookshot/registration.yml
+    - /synapse/config/telegram/registration.yml    
   
   #  old_signing_keys:
 #    "ed25519:id": { key: "base64string", expired_ts: 123456789123 } 
@@ -183,6 +184,9 @@ synapse:
     - name: hookshot 
       configMap:
         name: registration-hookshot
+    - name: telegram 
+      configMap:
+        name: registration-telegram
 
   #  - name: spamcheck
   #    flexVolume:
@@ -195,6 +199,8 @@ synapse:
     # Hookshot's volume mount ( required while using with hookshot )
     - name: hookshot
       mountPath: /synapse/config/hookshot
+    - name: telegram
+      mountPath: /synapse/config/telegram
   #  - name: spamcheck
   #    mountPath: /usr/local/lib/python3.7/site-packages/company
 

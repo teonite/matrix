@@ -4,3 +4,6 @@
 [submodule "matrix-hookshot"]
 	path = matrix-hookshot
 	url = https://github.com/matrix-org/matrix-hookshot
+[submodule "mautrix-telegram"]
+	path = mautrix-telegram
+	url = https://github.com/halkeye-helm-charts/mautrix-telegram/

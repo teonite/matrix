@@ -24,12 +24,14 @@ You can specify namespaces and other values in `config/config.sh`.
 - [Element installation](#element-installation)
   - [Element TLS setup](#element-tls-setup)
 - [Synapse installation](#synapse-installation)
-  - [ Blank installation with hookshot ](#blank-installation-with-hookshot)
-  - [ Adding hookshot to already existing synapse ](#adding-hookshot-to-already-existing-synapse)
+  - [ Blank installation with all appservices ](#blank-installation-with-all-appservices)
+  - [ Adding appservices to already existing synapse ](#adding-appservices-to-already-existing-synapse)
 - [Hookshot](#hookshot)
-  - [Basic installation](#basic-installation)
+  - [Basic installation](#basic-hookshot-installation)
   - [Update existing hookshot](#update-hootshots-config-on-kubernetes)
-
+- [mautrix-telegram](#mautrix-telegram)
+   - [Basic installation](#basic-mautrix-telegram-installation)
+ 
 <hr />
 
 ## Element Installation
@@ -71,29 +73,34 @@ You will also require some federation guides, either in the form of a .well-know
 When using a well-known entry, you will need to have a valid cert for whatever subdomain you wish to serve Synapse on.
 When using an SRV record, you will additionally need a valid cert for the main domain that you're using for your MXIDs.
 
-### Blank installation with hookshot
+### Blank installation with all appservices
 
-To integrate [matrix-hookshoot](https://github.com/matrix-org/matrix-hookshot) to [matrix-org/synapse](https://github.com/matrix-org/synapse) from scratch, follow these steps:
+To integrate appservices to [matrix-org/synapse](https://github.com/matrix-org/synapse) from scratch, follow these steps:
 
 1. Edit `/config/synapse.yaml` as you want, but make sure to leave the following configurations:
 
    ```yaml
    extraConfig:
-     app_service_config_files:
-       - /synapse/config/appservices/registration.yml
+   app_service_config_files:
+      - /synapse/config/hookshot/registration.yml
+      - /synapse/config/telegram/registration.yml    
    ```
 
    and
 
    ```yaml
    extraVolumes:
-      - name: appservices
-      configMap:
+      - name: hookshot 
+         configMap:
          name: registration-hookshot
+      - name: telegram 
+         configMap:
+         name: registration-telegram
    extraVolumeMounts:
-      - name: appservices
-      mountPath: /synapse/config/appservices
-
+      - name: hookshot
+         mountPath: /synapse/config/hookshot
+      - name: telegram
+         mountPath: /synapse/config/telegram
    ```
 
 2. Execute:
@@ -101,16 +108,15 @@ To integrate [matrix-hookshoot](https://github.com/matrix-org/matrix-hookshot) t
    ```
    make install_synapse_blank
    ```
-
    Please ensure that you have the necessary access and permissions to perform the installation process.
 
    Keep in mind synapse server initialization make take some time.
 
 <hr />
 
-### Adding hookshot to already existing synapse
+### Adding appservices to already existing synapse 
 
-> Before proceeding with the Synapse update, please ensure that you have already created the hookshot registration by running :  `make check-hookshot-registration-file`
+> Before proceeding with the Synapse update, please ensure that you have already created the hookshot registration by running :  `make check_registration_files`
 
 To update an already running Synapse server in Kubernetes, follow these steps:
 
@@ -128,6 +134,7 @@ To update an already running Synapse server in Kubernetes, follow these steps:
    ```yaml
    app_service_config_files:
      - /synapse/config/hookshot/registration.yml
+     - /synapse/config/telegram/registration.yml   
    ```
 
 3. Open `deployment.yaml`
@@ -138,6 +145,10 @@ To update an already running Synapse server in Kubernetes, follow these steps:
           defaultMode: 420
           name: registration-hookshot
         name: hookshot
+      - configMap:
+          defaultMode: 420
+          name: registration-telegram
+        name: telegram
    ```
 
    Find `volumeMounts` value and add:
@@ -145,6 +156,62 @@ To update an already running Synapse server in Kubernetes, follow these steps:
    ```yaml
         - mountPath: /synapse/config/hookshot
           name: hookshot
+        - mountPath: /synapse/config/telegram
+          name: telegram
+   ```
+
+   Remember to not cause any syntax errors
+
+4. Apply updated files to the Kubernetes cluster by running:
+   ```bash
+      kubectl apply -f configMap.yaml --force
+      kubectl apply -f deployment.yaml --force
+   ```
+5. Verify the status of the update by checking the rollout status of the deployment:
+
+   ```bash
+    kubectl rollout restart deployment matrix-synapse -n default
+   ```
+   > Change default to match namespace where synapse server is.
+
+Please ensure that you have the necessary access and permissions to perform the update process.
+
+### Adding mautrix-telegram to already existing synapse
+> Before proceeding with the Synapse update, please ensure that you have already created the mautrix-telegram registration by running :  `make check_telegram_registration_file`
+
+To update an already running Synapse server in Kubernetes, follow these steps:
+
+1. Retrieve the current `configmap` and `deployment` file from the running Synapse deployment in Kubernetes:
+
+   ```bash
+      kubectl get configmap matrix-synapse -n default -o yaml > configMap.yaml
+      kubectl get deployment  matrix-synapse  -n default  -o yaml > deployment.yaml
+   ```
+   > Change default to match namespace where synapse server is.
+   > Change 1st matrix-synapse to match your configmap for synapse server and 2nd matrix-synapse to synapse server deployment name.
+
+2. Open the `configMap.yaml` file and add the following lines in homeserver.yaml:
+
+   ```yaml
+   app_service_config_files:
+     - /synapse/config/telegram/registration.yml
+   ```
+
+3. Open `deployment.yaml`
+   Find `volumes` value and add:
+
+   ```yaml
+      - configMap:
+          defaultMode: 420
+          name: registration-telegram
+        name: telegram
+   ```
+
+   Find `volumeMounts` value and add:
+
+   ```yaml
+        - mountPath: /synapse/config/telegram
+          name: telegram
    ```
 
    Remember to not cause any syntax errors
@@ -167,7 +234,7 @@ Please ensure that you have the necessary access and permissions to perform the 
 
 ## Hookshot
 
-### Basic installation
+### Basic hookshot installation
 
 1. Open `config/hookshot` folder and edit files inside as needed.
 
@@ -214,3 +281,20 @@ If you already have hookshot working fine on kubernetes and want to updated conf
    ```bash
    kubectl rollout restart deployment matrix-hookshot
    ```
+
+<hr>
+
+## mautrix-telegram
+
+### Basic mautrix-telegram installation
+
+1. Open `config/telegram` folder and edit files inside as needed.
+
+2. Execute:
+   ```
+   make install_telegram
+   ```
+
+Keep in mind that telegram need some time to start responding or joining rooms
+
+> For more detailed setup instructions, refer to the [official guide](https://docs.mau.fi/bridges/python/telegram/index.html).
