@@ -61,7 +61,7 @@ check_hookshot_registration_file:
 	@kubectl get namespace ${synapse_namespace} > /dev/null 2>&1 || (echo "Namespace '${synapse_namespace}' does not exist.";)
 	@kubectl get configmap -n ${synapse_namespace} registration-hookshot >/dev/null 2>&1 && \
 	  (echo "registration-hookshot already exists."; exit) || \
-	  (echo "registration-hookshot do NOT exist. Edit ${hookshot_registration_values_path} and run: make create-hookshot-registration-file"; exit 1;)
+	  (echo "registration-hookshot do NOT exist. Edit ${hookshot_registration_values_path} and run: make create_hookshot_registration_file"; exit 1;)
 
 
 # Check synapse namespace, and generate if do not exist
@@ -122,7 +122,7 @@ check_telegram_registration_file:
 	@kubectl get namespace ${synapse_namespace} > /dev/null 2>&1 || (echo "Namespace '${synapse_namespace}' does not exist.";)
 	@kubectl get configmap -n ${synapse_namespace} registration-telegram >/dev/null 2>&1 && \
 	  (echo "registration-telegram already exists."; exit) || \
-	  (echo "registration-hookshot do NOT exist. Edit ${hookshot_registration_values_path} and run: make create-telegram-registration-file"; exit 1;)
+	  (echo "registration-telegram do NOT exist. Edit ${telegram_registration_values_path} and run: make create_telegram_registration_file"; exit 1;)
 
 
 # Check mautrix-telegram namespace, and generate if do not exist

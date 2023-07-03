@@ -110,7 +110,7 @@ deploymentAnnotations: {}
 # Configuration section
 config:
     # synapse server details
-    synapse server:
+    homeserver:
         #  The address that this appservice can use to connect to the synapse server. ( Change )
         address: https://openearth.space:8008
         # The domain of the synapse server (for MXIDs, etc).  ( Change )
