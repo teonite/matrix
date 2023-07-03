@@ -117,10 +117,10 @@ To update an already running Synapse server in Kubernetes, follow these steps:
 1. Retrieve the current `configmap` and `deployment` file from the running Synapse deployment in Kubernetes:
 
    ```bash
-      kubectl get configmap matrix-synapse -o yaml > configMap.yaml
-      kubectl get deployment  matrix-synapse -o yaml > deployment.yaml
+      kubectl get configmap matrix-synapse -n default -o yaml > configMap.yaml
+      kubectl get deployment  matrix-synapse  -n default  -o yaml > deployment.yaml
    ```
-
+   > Change default to match namespace where synapse server is.
    > Change 1st matrix-synapse to match your configmap for synapse server and 2nd matrix-synapse to synapse server deployment name.
 
 2. Open the `configMap.yaml` file and add the following lines in homeserver.yaml:
@@ -134,30 +134,32 @@ To update an already running Synapse server in Kubernetes, follow these steps:
    Find `volumes` value and add:
 
    ```yaml
-   - name: hookshot
-     configMap:
-       name: registration-hookshot
+      - configMap:
+          defaultMode: 420
+          name: registration-hookshot
+        name: hookshot
    ```
 
    Find `volumeMounts` value and add:
 
    ```yaml
-   - name: hookshot
-     mountPath: /synapse/config/hookshot
+        - mountPath: /synapse/config/hookshot
+          name: hookshot
    ```
 
    Remember to not cause any syntax errors
 
 4. Apply updated files to the Kubernetes cluster by running:
    ```bash
-      kubectl apply -f deployment.yaml --force
       kubectl apply -f configMap.yaml --force
+      kubectl apply -f deployment.yaml --force
    ```
 5. Verify the status of the update by checking the rollout status of the deployment:
 
    ```bash
-    kubectl rollout status deployment matrix-synapse
+    kubectl rollout restart deployment matrix-synapse -n default
    ```
+   > Change default to match namespace where synapse server is.
 
 Please ensure that you have the necessary access and permissions to perform the update process.
 
