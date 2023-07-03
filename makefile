@@ -26,7 +26,7 @@ synapse_namsepace:
 		@kubectl get namespace ${synapse_namespace} > /dev/null 2>&1 || (echo "Namespace '${synapse_namespace}' does not exist, creating...";  kubectl create namespace ${synapse_namespace})
 
 # Synapse installation
-install_synapse_blank: check_dependencies create-hookshot-registration-file
+install_synapse_blank: check_dependencies create_hookshot_registration_file
 	cp ${synapse_values_path} ./ananace/charts/matrix-synapse/values.yaml
 	@cd ./ananace/charts/matrix-synapse && \
 	if [ ! -f "charts/postgresql/Chart.yaml" ] || [ ! -f "charts/redis/Chart.yaml" ]; then \
@@ -36,7 +36,7 @@ install_synapse_blank: check_dependencies create-hookshot-registration-file
 	kubectl rollout status deployment ${synapse_deployment_name} -n ${synapse_namespace}
 
 # Hookshot registration file
-create-hookshot-registration-file: synapse_namsepace
+create_hookshot_registration_file: synapse_namsepace
 	@kubectl get configmap registration-hookshot -n ${synapse_namsepace} >/dev/null 2>&1 && \
 	  (echo "registration-hookshot already exists."; exit 0) || \
 	  (test -f ${hookshot_registration_values_path} && \
@@ -44,7 +44,7 @@ create-hookshot-registration-file: synapse_namsepace
 	  (echo "File '${hookshot_registration_values_path}' does not exist."; exit 1)
 
 # Checking hookshot registration file
-check-hookshot-registration-file: 
+check_hookshot_registration_file: 
 	@kubectl get namespace ${synapse_namespace} > /dev/null 2>&1 || (echo "Namespace '${synapse_namespace}' does not exist.";)
 	@kubectl get configmap -n ${synapse_namespace} registration-hookshot >/dev/null 2>&1 && \
 	  (echo "registration-hookshot already exists."; exit) || \
@@ -57,7 +57,7 @@ hookshot_namsepace:
 
 
 # Hookshot config file
-create-hookshot-config-file: create-hookshot-registration-file hookshot_namsepace
+create_hookshot_config_file: create_hookshot_registration_file hookshot_namsepace
 	@kubectl get configmap -n ${hookshot_namespace} ${hookshot_config_file_name} >/dev/null 2>&1 && \
 	  (echo "Hookshot config already exists."; exit 0) || \
 	  { \
@@ -69,13 +69,13 @@ create-hookshot-config-file: create-hookshot-registration-file hookshot_namsepac
 	  }
 
 # Hookhost ingress
-create-hookshot-ingress: hookshot_namsepace
+create_hookshot_ingress: hookshot_namsepace
 	@test -f ${hookshot_ingress_file_path} && \
 		(kubectl apply -f ${hookshot_ingress_file_path})|| \
 		(echo "File '${hookshot_ingress_file_path}' does not exist."; exit 1)
 
 # Hookshot installation
-install_hookshot: create-hookshot-ingress create-hookshot-config-file 
+install_hookshot: create_hookshot_ingress create_hookshot_config_file 
 	sed -i.bak 's/^appVersion:.*/appVersion: "latest"/' ./matrix-hookshot/helm/hookshot/Chart.yaml && rm ./matrix-hookshot/helm/hookshot/Chart.yaml.bak
 	$(eval RELEASE_EXIST := $(shell helm list -q | grep -Fx ${hookshot_deployment_name}))
 	$(if $(RELEASE_EXIST), \

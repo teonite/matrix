@@ -110,7 +110,7 @@ To integrate [matrix-hookshoot](https://github.com/matrix-org/matrix-hookshot) t
 
 ### Adding hookshot to already existing synapse
 
-> Before proceeding with the Synapse update, please ensure that you have already created the hookshot registration by running :  `make check-hookshot-registration-file`
+> Before proceeding with the Synapse update, please ensure that you have already created the hookshot registration by running :  `make check_hookshot_registration_file`
 
 To update an already running Synapse server in Kubernetes, follow these steps:
 
