@@ -143,44 +143,53 @@ To integrate [matrix-hookshoot](https://github.com/matrix-org/matrix-hookshot) t
 
 To update an already running Synapse server in Kubernetes, follow these steps:
 
-1. Retrieve the current `values.yaml` file from the running Synapse deployment in Kubernetes: ```bash
-   kubectl get configmap matrix-synapse -o yaml > values.yaml
+1. Retrieve the current `config map` and `deployment` file from the running Synapse deployment in Kubernetes:
+
+   ```bash
+      kubectl get configmap matrix-synapse -o yaml > configMap.yaml
+      kubectl get deployment  matrix-synapse -o yaml > deployment.yaml
    ```
-   This command fetches the values.yaml file stored as a ConfigMap in Kubernetes and saves it locally.
-   ```
-2. Open the `values.yaml` file and add the following configurations:
+
+   > Change 1st matrix-synapse to match your configmap for synapse server and 2nd matrix-synapse to synapse server deployment name.
+
+2. Open the `configMap.yaml` file and add the following lines in homeserver.yaml:
 
    ```yaml
-   extraConfig:
    app_service_config_files:
      - /synapse/config/appservices/registration.yml
    ```
 
-   and
+3. Open `deployment.yaml`
+   Find `volumes` value and add:
 
    ```yaml
-   extraVolumes:
-       - name: appservices
-       configMap:
-           name: registration-hookshot
-   extraVolumeMounts:
-       - name: appservices
-       mountPath: /synapse/config/appservices
+   - name: appservices
+     configMap:
+       name: registration-hookshot
    ```
 
-3. Apply the updated values.yaml file to the Kubernetes cluster:
-   ```bash
-   kubectl apply -f values.yaml
+   Find `volumeMounts` value and add:
+
+   ```yaml
+      - name: appservices
+         mountPath: /synapse/config/appservices
    ```
-4. Upgrade the Synapse deployment to apply the configuration changes:
-   ```bas
-   helm upgrade matrix-synapse . --values=values.yaml
+
+   Remember to not cause any syntax errors
+
+4. Apply updated files to the Kubernetes cluster by running:
+   ```bash
+      kubectl apply -f values.yaml --force
+      kubectl apply -f configMap.yaml --force
    ```
 5. Verify the status of the update by checking the rollout status of the deployment:
-`bash
+
+   ```bash
     kubectl rollout status deployment matrix-synapse
-    `
+   ```
+
 Please ensure that you have the necessary access and permissions to perform the update process.
+
 <hr>
 
 ## Hookshot
