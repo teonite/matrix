@@ -1,0 +1,156 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "matrix-synapse.fullname" . }}
+  labels:
+    {{- include "matrix-synapse.labels" . | nindent 4 }}
+data:
+  log.yaml: |
+    version: 1
+    formatters:
+      {{- if .Values.config.useStructuredLogging }}
+      structured:
+        class: synapse.logging.TerseJsonFormatter
+      {{- else }}
+      precise:
+        format: '%(asctime)s - %(name)s - %(lineno)d - %(levelname)s - %(request)s- %(message)s'
+      {{- end }}
+    filters:
+      context:
+        (): synapse.util.logcontext.LoggingContextFilter
+        request: ""
+    handlers:
+      console:
+        class: logging.StreamHandler
+        formatter: {{ if .Values.config.useStructuredLogging }}structured{{ else }}precise{{ end }}
+        filters: [context]
+        level: {{ .Values.config.logLevel | default "INFO" }}
+    loggers:
+        synapse:
+          level: {{ .Values.config.logLevel | default "INFO" }}
+        {{- with .Values.extraLoggers -}}
+        {{ . | toYaml | nindent 8 }}
+        {{- end }}
+    root:
+        level: {{ .Values.config.logLevel | default "INFO" }}
+        handlers: [console]
+  homeserver.yaml: |
+    # NOTE:
+    # Secrets are stored in separate configs to better fit K8s concepts
+
+    ## Server ##
+
+    server_name: {{ required "You need to specify a serverName" .Values.serverName | quote }}
+    public_baseurl: {{ .Values.config.publicBaseurl | default (printf "https://%s" (.Values.publicServerName | default .Values.serverName)) | quote }}
+    pid_file: /homeserver.pid
+    web_client: False
+    soft_file_limit: 0
+    log_config: "/synapse/config/log.yaml"
+    report_stats: {{ required "You need to specify config.reportStats" .Values.config.reportStats }}
+
+    ## Ports ##
+
+    listeners:
+      - port: 8008
+        tls: false
+        bind_addresses: ['::']
+        type: http
+        x_forwarded: true
+
+        resources:
+          - names: 
+              - client
+              - federation
+{{- with .Values.config.extraMainListenerTypes -}}
+              {{ . | toYaml | nindent 14 }}
+{{- end }}
+            compress: false
+
+      - port: 9090
+        tls: false
+        bind_addresses: ['::']
+        type: http
+
+        resources:
+          - names: [metrics]
+            compress: false
+
+      - port: 9093
+        tls: false
+        bind_addresses: ['::']
+        type: http
+
+        resources:
+          - names: [replication]
+            compress: false
+    {{- if .Values.config.extraListeners }}
+      {{ .Values.config.extraListeners | toYaml | nindent 6 }}
+    {{- end }}
+
+    ## Files ##
+
+    media_store_path: "/synapse/data/media"
+    uploads_path: "/synapse/data/uploads"
+    {{- if .Values.config.recaptcha }}
+
+    ## Captcha ##
+
+    recaptcha_public_key: {{ .Values.config.recaptcha.publicKey | quote }}
+    enable_registration_captcha: true
+    {{- end }}
+    {{- if .Values.config.turnUris }}
+
+    ## Turn ##
+
+    turn_uris:
+      {{ toYaml .Values.config.turnUris | nindent 6 }}
+    {{- end }}
+
+    ## Registration ##
+
+    enable_registration: {{ .Values.config.enableRegistration | default false }}
+
+    ## Metrics ###
+
+    enable_metrics: true
+
+    ## Signing Keys ##
+
+    signing_key_path: "/synapse/keys/signing.key"
+
+    # The trusted servers to download signing keys from.
+    trusted_key_servers: {{- .Values.config.trustedKeyServers | toYaml | nindent 6 }}
+
+    ## Workers ##
+    {{- $default := .Values.workers.default }}
+    {{- range $worker, $config := .Values.workers }}
+      {{- if $config.enabled }}
+        {{- if or (eq $worker "pusher") (eq ($config.app | default "") "pusher") }}
+
+    # For pusher worker
+    start_pushers: false
+        {{- else if or (eq $worker "appservice") (eq ($config.app | default "") "appservice") }}
+
+    # For appservice worker
+    notify_appservices: false
+        {{- else if or (eq $worker "federation_sender") (eq ($config.app | default "") "federation_sender") }}
+
+    # For federation_sender worker
+    send_federation: false
+        {{- else if or (eq $worker "media_repository") (eq ($config.app | default "") "media_repository") }}
+
+    # For media_repository worker
+    enable_media_repo: false
+        {{- else if or (eq $worker "user_dir") (eq ($config.app | default "") "user_dir") }}
+
+    # For user_dir worker
+    update_user_directory: false
+        {{- end }}
+      {{- end }}
+    {{- end }}
+    {{- with .Values.extraConfig }}
+
+    ## Extra config ##
+    {{ . | toYaml | nindent 4 }}
+    {{- end }}

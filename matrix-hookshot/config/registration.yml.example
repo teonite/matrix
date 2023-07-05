@@ -1,0 +1,40 @@
+id: matrix-hookshot
+# This can be anything, but must be unique within your homeserver
+as_token: aaaaaaaaaa
+# AppService token, this can be a random string
+hs_token: aaaaaaaaaa
+# HomeserverSecret, can be a random string
+namespaces:
+  rooms: []
+  # Below we prevent users from registering using the following regexes,
+  # hookshot will also use them while creating bot accounts.
+  # You can delete the ones you won't use.
+  # Change "foobar" to your homeserver's domain
+  users:
+    - regex: "@_github_.*:foobar"
+      exclusive: true
+    - regex: "@_gitlab_.*:foobar"
+      exclusive: true
+    - regex: "@_jira_.*:foobar"
+      exclusive: true
+    - regex: "@_webhooks_.*:foobar"
+      # Where "_webhooks_" is set by userIdPrefix in hookshot's config.yml
+      exclusive: true
+    - regex: "@feeds:foobar"
+      # Matches the localpart of all serviceBots in hookshot's config.yml
+      exclusive: true
+  aliases:
+    - regex: "#github_.+:foobar"
+      exclusive: true
+
+sender_localpart: hookshot
+# Main bot username
+url: "http://<hookshot-url>:9002"
+# This should match hookshot's URL and bridge.port in your hookshot's config file
+rate_limited: false
+
+# [EXPERIMENTAL] If enabling encryption
+de.sorunome.msc2409.push_ephemeral: true
+push_ephemeral: true
+org.matrix.msc3202: true
+

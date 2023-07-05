@@ -1,0 +1,195 @@
+{{- if .Values.ingress.enabled -}}
+{{- $fullName := include "matrix-synapse.fullname" . -}}
+{{- $wkName := include "matrix-synapse.externalname" (dict "global" . "external" "wellknown-lighttpd") -}}
+{{- $v1Ingress := .Capabilities.APIVersions.Has "networking.k8s.io/v1" -}}
+{{- if $v1Ingress -}}
+apiVersion: networking.k8s.io/v1
+{{- else -}}
+apiVersion: networking.k8s.io/v1beta1
+{{- end }}
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "matrix-synapse.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+{{- if .Values.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className }}
+{{- end }}
+{{- if .Values.ingress.tls }}
+  tls:
+  {{- range .Values.ingress.tls }}
+    - hosts:
+      {{- range .hosts }}
+        - {{ . | quote }}
+      {{- end }}
+      {{- if .secretName }}
+      secretName: {{ .secretName }}
+      {{- end }}
+  {{- end }}
+{{- end }}
+  rules:
+  {{- $csHosts := .Values.ingress.csHosts }}
+  {{- if .Values.ingress.includeServerName }}
+    {{- $csHosts = concat (list (.Values.publicServerName | default .Values.serverName)) $csHosts }}
+  {{- end }}
+  {{- $s2sHosts := .Values.ingress.hosts }}
+  {{- if .Values.ingress.includeServerName }}
+    {{- $s2sHosts = concat (list .Values.serverName) $s2sHosts }}
+  {{- end }}
+  {{- $wkHosts := .Values.ingress.wkHosts }}
+  {{- if .Values.ingress.includeServerName }}
+    {{- $wkHosts = concat (list .Values.serverName) $wkHosts }}
+  {{- end }}
+  {{- $hosts := uniq (concat $s2sHosts $csHosts $wkHosts) }}
+  {{- range $hosts }}
+    {{- $host := . }}
+    - host: {{ . | quote }}
+      http:
+        paths:
+        {{- $default := $.Values.workers.default }}
+        {{- range $worker, $config := $.Values.workers }}
+          {{- $name := $worker | replace "_" "-" }}
+          {{- if and $config.enabled $config.listeners (or $config.paths $config.csPaths) }}
+            {{- $service := include "matrix-synapse.workername" (dict "global" $ "worker" $name) }}
+            {{- if has $host $csHosts }}
+              {{- range $config.csPaths }}
+                {{- if $.Values.ingress.traefikPaths }}
+          - path: {{ printf "/{path:%s}" (trimPrefix "/" .) | quote }}
+            backend:
+                  {{- if $v1Ingress }}
+              service:
+                name: {{ $service }}
+                port:
+                  number: 8083
+            pathType: ImplementationSpecific
+                  {{- else }}
+              serviceName: {{ $service }}
+              servicePort: 8083
+                  {{- end }}
+                {{- else }}
+          - path: {{ . | quote }}
+            backend:
+                  {{- if $v1Ingress }}
+              service:
+                name: {{ $service }}
+                port:
+                  number: 8083
+            pathType: ImplementationSpecific
+                  {{- else }}
+              serviceName: {{ $service }}
+              servicePort: 8083
+                  {{- end }}
+                {{- end }}
+              {{- end }}
+            {{- end }}
+            {{- if has $host $s2sHosts }}
+              {{- range $config.paths }}
+                {{- if $.Values.ingress.traefikPaths }}
+          - path: {{ printf "/{path:%s}" (trimPrefix "/" .) | quote }}
+            backend:
+                  {{- if $v1Ingress }}
+              service:
+                name: {{ $service }}
+                port:
+                  number: 8083
+            pathType: ImplementationSpecific
+                  {{- else }}
+              serviceName: {{ $service }}
+              servicePort: 8083
+                  {{- end }}
+                {{- else }}
+          - path: {{ . | quote }}
+            backend:
+                  {{- if $v1Ingress }}
+              service:
+                name: {{ $service }}
+                port:
+                  number: 8083
+            pathType: ImplementationSpecific
+                  {{- else }}
+              serviceName: {{ $service }}
+              servicePort: 8083
+                  {{- end }}
+                {{- end }}
+              {{- end }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+
+        {{- if has . $csHosts }}
+        {{- with $.Values.ingress.csPaths }}
+          {{ . | toYaml | nindent 10 }}
+        {{- end }}
+        {{- end }}
+        {{- if has . $s2sHosts }}
+        {{- with $.Values.ingress.paths }}
+          {{ . | toYaml | nindent 10 }}
+        {{- end }}
+        {{- end }}
+
+        {{- if or (has . $csHosts) (has . $s2sHosts) }}
+          - path: /_matrix
+            backend:
+          {{- if $v1Ingress }}
+              service:
+                name: {{ $fullName }}
+                port:
+                  number: {{ $.Values.service.port }}
+            pathType: Prefix
+          {{- else }}
+              serviceName: {{ $fullName }}
+              servicePort: {{ $.Values.service.port }}
+          {{- end }}
+        {{- end }}
+
+        {{- if and (has . $csHosts) $.Values.ingress.includeUnderscoreSynapse }}
+          - path: /_synapse
+            backend:
+          {{- if $v1Ingress }}
+              service:
+                name: {{ $fullName }}
+                port:
+                  number: {{ $.Values.service.port }}
+            pathType: Prefix
+          {{- else }}
+              serviceName: {{ $fullName }}
+              servicePort: {{ $.Values.service.port }}
+          {{- end }}
+        {{- end }}
+
+        {{- if has . $wkHosts }}
+          {{- if $.Values.wellknown.enabled }}
+          - path: /.well-known/matrix
+            backend:
+            {{- if $v1Ingress }}
+              service:
+                name: {{ $wkName }}
+                port:
+                  number: {{ $.Values.wellknown.service.port | default 80 }}
+            pathType: Prefix
+            {{- else }}
+              serviceName: {{ $wkName }}
+              servicePort: {{ $.Values.wellknown.service.port | default 80 }}
+            {{- end }}
+          {{-   else }}
+          - path: /.well-known/matrix
+            backend:
+            {{- if $v1Ingress }}
+              service:
+                name: {{ $fullName }}
+                port:
+                  number: {{ $.Values.service.port }}
+            pathType: Prefix
+            {{- else }}
+              serviceName: {{ $fullName }}
+              servicePort: {{ $.Values.service.port }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+  {{- end }}
+{{- end }}

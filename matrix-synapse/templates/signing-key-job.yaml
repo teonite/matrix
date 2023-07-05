@@ -1,0 +1,153 @@
+{{- if .Values.signingkey.job.enabled }}
+{{- if .Values.signingkey.existingSecret }}
+{{- fail "Can't specify both signingkey.job.enabled and signingkey.existingSecret" }}
+{{- end }}
+{{- $name := include "matrix-synapse.workername" (dict "global" . "worker" "signingkey-job") }}
+{{- $secretName := include "matrix-synapse.workername" (dict "global" . "worker" "signingkey") }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "matrix-synapse.labels" . | nindent 4 }}
+    app.kubernetes.io/component: signingkey-job
+  annotations:
+    helm.sh/hook: pre-install
+    helm.sh/hook-delete-policy: hook-succeeded
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "matrix-synapse.labels" . | nindent 4 }}
+    app.kubernetes.io/component: signingkey-job
+  annotations:
+    helm.sh/hook: pre-install
+    helm.sh/hook-delete-policy: hook-succeeded
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    resourceNames:
+      - {{ $secretName }}
+    verbs:
+      - get
+      - update
+      - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "matrix-synapse.labels" . | nindent 4 }}
+    app.kubernetes.io/component: signingkey-job
+  annotations:
+    helm.sh/hook: pre-install
+    helm.sh/hook-delete-policy: hook-succeeded
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ $name }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ $name }}
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "matrix-synapse.labels" . | nindent 4 }}
+    app.kubernetes.io/component: signingkey-job
+  annotations:
+    helm.sh/hook: pre-install
+    helm.sh/hook-delete-policy: hook-succeeded
+  {{- with .Values.signingkey.job.annotations }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ttlSecondsAfterFinished: 0
+  template:
+    metadata:
+      labels:
+        {{- include "matrix-synapse.labels" . | nindent 8 }}
+        app.kubernetes.io/component: signingkey-job
+    spec:
+      containers:
+        - command:
+            - sh
+            - -c
+            - |
+              echo "Generating signing key..."
+              if which generate_signing_key.py >/dev/null; then
+                generate_signing_key.py -o /synapse/keys/signing.key
+              else
+                generate_signing_key -o /synapse/keys/signing.key
+              fi
+          image: "{{ .Values.signingkey.job.generateImage.repository }}:{{ .Values.signingkey.job.generateImage.tag | default "latest" }}"
+          imagePullPolicy: {{ .Values.signingkey.job.generateImage.pullPolicy }}
+          name: signing-key-generate
+          resources:
+            {{- toYaml .Values.signingkey.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /synapse/keys
+              name: matrix-synapse-keys
+        - command:
+            - sh
+            - -c
+            - |
+              printf "Checking rights to update secret... "
+              kubectl auth can-i update secret/${SECRET_NAME}
+              /scripts/signing-key.sh
+          env:
+            - name: SECRET_NAME
+              value: {{ $secretName }}
+          image: "{{ .Values.signingkey.job.publishImage.repository }}:{{ .Values.signingkey.job.publishImage.tag | default "latest" }}"
+          imagePullPolicy: {{ .Values.signingkey.job.publishImage.pullPolicy }}
+          name: signing-key-upload
+          resources:
+            {{- toYaml .Values.signingkey.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /scripts
+              name: scripts
+              readOnly: true
+            - mountPath: /synapse/keys
+              name: matrix-synapse-keys
+              readOnly: true
+      restartPolicy: Never
+      serviceAccount: {{ $name }}
+      volumes:
+        - name: scripts
+          configMap:
+            name: {{ include "matrix-synapse.fullname" . }}-scripts
+            defaultMode: 0755
+        - name: matrix-synapse-keys
+          emptyDir: {}
+  parallelism: 1
+  completions: 1
+  backoffLimit: 1
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  annotations:
+    helm.sh/hook: pre-install
+    helm.sh/hook-delete-policy: never
+    helm.sh/resource-policy: keep
+    argocd.argoproj.io/hook: Skip
+    argocd.argoproj.io/hook-delete-policy: Never
+  name: {{ $secretName }}
+  labels:
+    {{- include "matrix-synapse.labels" . | nindent 4 }}
+    app.kubernetes.io/component: signingkey-job
+{{ $secret := (lookup "v1" "Secret" .Release.Namespace $secretName) -}}
+{{ if $secret -}}
+data:
+  signing.key: {{ (b64dec (index $secret.data "signing.key")) | b64enc }}
+{{ end -}}
+{{- end }}
