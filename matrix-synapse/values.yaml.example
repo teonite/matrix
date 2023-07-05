@@ -26,7 +26,7 @@ image:
 ## The Matrix domain name, this is what will be used for the domain part in
 ## your MXIDs.
 ##
-# serverName: 'example.com'
+serverName: 'openearth.space' # change to your domain 
 
 ## The public Matrix server name, this will be used for any public URLs
 ## in config as well as for client API links in the ingress.
@@ -148,8 +148,12 @@ config:
 ## Specify arbitrary Synapse configuration here;
 ## Ref: https://github.com/matrix-org/synapse/blob/develop/docs/sample_config.yaml
 ##
-extraConfig: {}
-#  old_signing_keys:
+
+extraConfig: 
+  app_service_config_files:
+    - /synapse/config/appservices/registration.yml
+  
+  #  old_signing_keys:
 #    "ed25519:id": { key: "base64string", expired_ts: 123456789123 } 
 #  use_presence: false
 #  enable_search: false
@@ -206,7 +210,10 @@ synapse:
 
   ## Additional volumes to mount into Synapse
   ##
-  extraVolumes: []
+  extraVolumes:
+    - name: appservices
+      configMap:
+        name: registration-hookshot
   #  - name: spamcheck
   #    flexVolume:
   #      driver: ananace/git-live
@@ -214,7 +221,9 @@ synapse:
   #        repo: https://github.com/company/synapse-module
   #        interval: 1d
   #      readOnly: true
-  extraVolumeMounts: []
+  extraVolumeMounts:
+    - name: appservices
+      mountPath: /synapse/config/appservices
   #  - name: spamcheck
   #    mountPath: /usr/local/lib/python3.7/site-packages/company
 
@@ -607,7 +616,7 @@ workers:
 ## adding SRV-records to DNS.
 ##
 wellknown:
-  enabled: false
+  enabled: true 
   replicaCount: 1
 
   # Lighttpd does not bind on IPv6 by default, although this is required in

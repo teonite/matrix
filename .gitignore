@@ -1,5 +1,4 @@
-
-# Ignore all .yaml files except Cherl.yaml
+.DS_Store
 *.yaml
 *.yml
 *.pem
@@ -7,5 +6,4 @@
 */charts/*
 !**/templates/**/*
 !/tls-setup/*
-
 Chart.lock

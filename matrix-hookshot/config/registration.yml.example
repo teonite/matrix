@@ -9,28 +9,28 @@ namespaces:
   # Below we prevent users from registering using the following regexes,
   # hookshot will also use them while creating bot accounts.
   # You can delete the ones you won't use.
-  # Change "foobar" to your homeserver's domain
+  # Change "openearth.space" to your homeserver's domain
   users:
-    - regex: "@_github_.*:foobar"
+    - regex: "@_github_.*:openearth.space"
       exclusive: true
-    - regex: "@_gitlab_.*:foobar"
+    - regex: "@_gitlab_.*:openearth.space"
       exclusive: true
-    - regex: "@_jira_.*:foobar"
+    - regex: "@_jira_.*:openearth.space"
       exclusive: true
-    - regex: "@_webhooks_.*:foobar"
+    - regex: "@_webhooks_.*:openearth.space"
       # Where "_webhooks_" is set by userIdPrefix in hookshot's config.yml
       exclusive: true
-    - regex: "@feeds:foobar"
+    - regex: "@feeds:openearth.space"
       # Matches the localpart of all serviceBots in hookshot's config.yml
       exclusive: true
   aliases:
-    - regex: "#github_.+:foobar"
+    - regex: "#github_.+:openearth.space"
       exclusive: true
 
 sender_localpart: hookshot
 # Main bot username
-url: "http://<hookshot-url>:9002"
-# This should match hookshot's URL and bridge.port in your hookshot's config file
+url: "http://openearth.space:9002"
+# Change openearth.space so it match hookshot's URL and bridge.port in your hookshot's config file
 rate_limited: false
 
 # [EXPERIMENTAL] If enabling encryption

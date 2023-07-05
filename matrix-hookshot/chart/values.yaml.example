@@ -299,14 +299,14 @@ hookshot:
         bindAddress: 0.0.0.0
         resources:
           - widgets
-  registration:
-    id: matrix-hookshot
-    as_token: ""
-    hs_token: ""
-    namespaces:
-      rooms: []
-      users: []
-    sender_localpart: hookshot
-    url: "http://example.com"
-    rate_limited: false
-  passkey: ""
+    registration:
+      id: matrix-hookshot
+      as_token: ""
+      hs_token: ""
+      namespaces:
+        rooms: []
+        users: []
+      sender_localpart: hookshot
+      url: "http://example.com"
+      rate_limited: false
+    passkey: ""

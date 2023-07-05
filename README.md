@@ -12,13 +12,16 @@ Before proceeding with the integration, ensure you have the following prerequisi
 
 <hr />
 
+## Note
+Please customize the default domain in this guide, `openearth.space`, to match your specific requirements.
+
 ## Table of Contents
 
 - [Element installation](#element-installation)
   - [Element TLS setup](#element-tls-setup)
 - [Synapse installation](#synapse-installation)
-  - [ Blank ](#blank-installation)
-  - [ Updating ](#updating-already-existing-synapse)
+  - [ Blank installation with hookshot ](#blank-installation-with-hookshot)
+  - [ Adding hookshot to already existing synapse ](#adding-hookshot-to-already-existing-synapse)
 - [Hookshot](#hookshot)
   - [Basic installation](#basic-installation)
   - [Update existing hookshot](#update-hootshots-config-on-kubernetes)
@@ -38,31 +41,11 @@ For element installation follow theses steps:
    ```bash
    cp ./values.yaml.example ./values.yaml
    ```
-2. Open and fill fields inside `values.yaml`<br>
-   Make sure to fill:
+2. Open and fill fields inside `values.yaml`  depending on your needs.
 
-   ```yaml
-   defaultServer:
-     url: "" # Url address where synapse server is
-     name: "" # Name of this server
-   ```
+   Make sure `defaultServer.url` uses correct protocol.
 
-   and to configure ingress
-
-   ```yaml
-   ingress:
-       enabled: false # set to true
-       annotations: {}
-           # kubernetes.io/ingress.class: nginx
-           # kubernetes.io/tls-acme: "true"
-       hosts:
-           -  "" # change to your actual domain or subdomain, example: chat.example.com
-           tls: []
-   ```
-
-   > If you need TLS (HTTPS) support, follow [these steps](#element-tls-setup)
-
-   Configure rest of `values.yaml` depending on your needs.
+   > If you need TLS (HTTPS) support for your ingress, follow [these steps](#element-tls-setup)
 
 3. Run:
 
@@ -70,11 +53,9 @@ For element installation follow theses steps:
    helm install element-web . --values=values.yaml
    ```
 
-4. Open url defined in hosts section in `values.yaml` and check if everything is working.
-
 ### Element TLS Setup
 
-In order to add tls to your **element web** you have follow theses steps:
+In order to add tls to your **element web** you have to follow theses steps:
 
 1.  Open `tls-setup` folder, and run:
     ```bash
@@ -90,11 +71,12 @@ In order to add tls to your **element web** you have follow theses steps:
     tls:
         - secretName: element-tls-secret # This must match secretName from tls-secret.yaml
         hosts:
-            - <url> # This url must match actual domain or subdoamin url
+            -  chat.openearth.space  # This url must match actual domain or subdoamin url
     ```
 5.  Upgrade deployment by running in `element-web` folder:
 `bash
-        helm upgrade <your-matrix-synapse-deployment-name> . --values=values.yaml
+        helm upgrade 
+        element-web . --values=values.yaml
     `
 <hr />
 
@@ -105,7 +87,7 @@ You will also require some federation guides, either in the form of a .well-know
 When using a well-known entry, you will need to have a valid cert for whatever subdomain you wish to serve Synapse on.
 When using an SRV record, you will additionally need a valid cert for the main domain that you're using for your MXIDs.
 
-### Blank Installation
+### Blank installation with hookshot 
 
 > Before synapse installation make sure you already created [hookshot registration config map](#hookshot-registration-config-map).
 
@@ -117,12 +99,12 @@ To integrate [matrix-hookshoot](https://github.com/matrix-org/matrix-hookshot) t
    cp ./values.yaml.example ./values.yaml
    ```
 
-2. Modify the values in the `values.yaml` file according to your requirements. Make sure to include the following configurations:
+2. Modify the values in the `values.yaml` file according to your requirements. Make sure to leave the following configurations:
 
    ```yaml
    extraConfig:
-   app_service_config_files:
-     - /synapse/config/appservices/registration.yml
+      app_service_config_files:
+      - /synapse/config/appservices/registration.yml
    ```
 
    and
@@ -138,7 +120,7 @@ To integrate [matrix-hookshoot](https://github.com/matrix-org/matrix-hookshot) t
 
    ```
 
-   > Don't forget to change **serverName** and **wellknown.enabled** to true
+   > Don't forget to change **serverName** 
    You may also need to configure `ingress` inside `values.yaml`.
 
 3. In `/matrix-synapse` folder run:
@@ -150,14 +132,16 @@ To integrate [matrix-hookshoot](https://github.com/matrix-org/matrix-hookshot) t
 
    Please ensure that you have the necessary access and permissions to perform the installation process.
 
-### Updating already existing synapse
+   Keep in mind synapse server initialization make take some time.
+
+### Adding hookshot to already existing synapse
 
 > Before proceeding with the Synapse update, please ensure that you have already created the [hookshot registration config map](#hookshot-registration-config-map).
 
 To update an already running Synapse server in Kubernetes, follow these steps:
 
 1. Retrieve the current `values.yaml` file from the running Synapse deployment in Kubernetes: ```bash
-   kubectl get configmap <your-matrix-synapse-deployment-name> -o yaml > values.yaml
+   kubectl get configmap matrix-synapse -o yaml > values.yaml
    ```
    This command fetches the values.yaml file stored as a ConfigMap in Kubernetes and saves it locally.
    ```
@@ -187,11 +171,11 @@ To update an already running Synapse server in Kubernetes, follow these steps:
    ```
 4. Upgrade the Synapse deployment to apply the configuration changes:
    ```bas
-   helm upgrade <your-matrix-synapse-deployment-name> . --values=values.yaml
+   helm upgrade matrix-synapse . --values=values.yaml
    ```
 5. Verify the status of the update by checking the rollout status of the deployment:
 `bash
-    kubectl rollout status deployment <your-matrix-synapse-deployment-name> 
+    kubectl rollout status deployment matrix-synapse
     `
 Please ensure that you have the necessary access and permissions to perform the update process.
 <hr>
@@ -200,7 +184,7 @@ Please ensure that you have the necessary access and permissions to perform the 
 
 ### Basic installation
 
-1. Create a [Hookshot registration file](#hookshot-registration-config-map).
+1. If you haven't already, create a [Hookshot registration file](#hookshot-registration-config-map).
 2. Create the [Hookshot config map](#hookshot-config-map).
 3. [Modify values in `values.yaml`](#change-valuesyaml).
 4. Configure [Hookshot ingress](#hookshot-ingress) if needed.
@@ -208,6 +192,8 @@ Please ensure that you have the necessary access and permissions to perform the 
    ```bash
    helm install matrix-hookshot . --values=values.yaml
    ```
+
+Keep in mind that hookshot need some time to start responding or joining rooms
 
 > For more detailed setup instructions, refer to the [official guide](https://matrix-org.github.io/matrix-hookshot/latest/setup.html).
 
@@ -238,7 +224,7 @@ kubectl create configmap registration-hookshot --from-file=registration.yml
 
 To set up Hookshot config map, follow these steps:
 
-0. f you haven't already done so, create the [registration file](#hookshot-registration-config-map).
+0. If you haven't already done so, create the [registration file](#hookshot-registration-config-map).
 
 1. Open `matrix-hookshot/config/` folder and execute the following command::
 
@@ -247,6 +233,7 @@ To set up Hookshot config map, follow these steps:
    ```
 
 2. Edit `config.yml` file.
+   Make sure `url` and `mediaURL` uses correct protocol.
 
    > The url in the configuration must match the Synapse server URL.
 
@@ -274,9 +261,7 @@ To configure matrix-hookshot to work on Kubernetes, you need to modify the value
    cp ./values.yaml.example ./values.yaml
    ```
 
-2. Open `values.yaml` and locate the `existingConfigMap` value inside the `values.yaml` file and set it to the name of the created hookshot config map.
-
-3. Delete raw config value in `values.yaml`
+2. Open `values.yaml` and locate the `existingConfigMap` value inside the `values.yaml` file and set it to the name of the created hookshot config map.Delete raw config value in `values.yaml`
 
    Example:
 
@@ -297,8 +282,6 @@ To configure matrix-hookshot to work on Kubernetes, you need to modify the value
    -    rate_limited: false
    -  passkey: ""
    ```
-
-4. Find `ingress` value and configure.
 
 ### Hookshot ingress
 

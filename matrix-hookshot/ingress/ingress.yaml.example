@@ -1,10 +1,10 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: example-ingress
+  name: hookshot-ingress
 spec:
   rules:
-    - host: example.com # change to your domain
+    - host: openearth.space # change to your domain
       http:
         paths:
           - path: /hookshot/webhook # select your own webhook url, remember it has to match config.yaml generic urlPrefix
@@ -13,11 +13,11 @@ spec:
               service:
                 name: matrix-hookshot
                 port:
-                  number: 9002
+                  number: 9000
           - path: /
             pathType: Prefix
             backend:
               service:
                 name: matrix-hookshot
                 port:
-                  number: 9000
+                  number: 9002

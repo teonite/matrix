@@ -3,21 +3,21 @@
 bridge:
   # Basic homeserver configuration
 
-domain: example.com
-# Must match homeserver's domain
+  domain: openearth.space
+  # Must match homeserver's domain
 
-url: http://localhost:8008
-# Must match homeserver's URL
+  url: http://openearth.space:8008
+  # Must match homeserver's URL
 
-mediaUrl: https://example.com
-# Optional. The URL where media hosted on the homeserver is reachable
-# (this should be publicly reachable from the internet)
+  mediaUrl: http://openearth.space
+  # Optional. The URL where media hosted on the homeserver is reachable
+  # (this should be publicly reachable from the internet)
 
-port: 9002
-# Port on which hookshot will receive events
+  port: 9002
+  # Port on which hookshot will receive events
 
-bindAddress: 127.0.0.1
-# Should stay 127.0.0.1 while using in Kubernetes.
+  bindAddress: 0.0.0.0
+  # Should stay 0.0.0.0 while using in Kubernetes.
 # This is the address on which hookshot will receive events.
 
 
@@ -38,7 +38,7 @@ github:
 
     client_id: foo
     client_secret: bar
-    redirect_uri:  https://<hookshot-webhook-url>/oauth # should point to redirect url that points to webhook endpoint 
+    redirect_uri:  https://openearth.space/hookshot/webhook/oauth # should point to redirect url that points to webhook endpoint 
   defaultOptions:
     # (Optional) Default options for GitHub connections.
     showIssueRoomLink: false
@@ -57,7 +57,7 @@ gitlab:
       url: https://gitlab.com
   webhook:
     secret: secrettoken
-    publicUrl: https://<hookshot-webhook-url>/ #  must be the URL where GitLab webhook events are received (i.e. the path to / for your webhooks listener).
+    publicUrl: https://openearth.space/hookshot/webhook/ #  must be the URL where GitLab webhook events are received (i.e. the path to / for your webhooks listener).
   userIdPrefix:
     # (Optional) Prefix used when creating ghost users for GitLab accounts.
 
@@ -66,7 +66,7 @@ gitlab:
 figma:
   # (Optional) Configure this to enable Figma support
 
-  publicUrl: https://<hookshot-webhook-url>/
+  publicUrl: https://openearth.space/hookshot/webhook/
   instances:
     your-instance:
       teamId: your-team-id
@@ -85,7 +85,7 @@ jira:
 
     client_id: foo
     client_secret: bar
-    redirect_uri: https://<hookshot-webhook-url>/jira/oauth
+    redirect_uri: https://openearth.space/hookshot/webhook/jira/oauth
 generic:
   # (Optional) Support for generic webhook events.
   #'allowJsTransformationFunctions' will allow users to write short transformation snippets in code, and thus is unsafe in untrusted environments
@@ -93,7 +93,7 @@ generic:
 
   enabled: false 
   enableHttpGet: false
-  urlPrefix: https://<hookshot-webhook-url>/
+  urlPrefix: https://openearth.space/hookshot/webhook/
   userIdPrefix: _webhooks_
   allowJsTransformationFunctions: false
   waitForComplete: false
@@ -124,7 +124,7 @@ serviceBots:
 
   - localpart: feeds
     displayname: Feeds
-    avatar: ./assets/feeds_avatar.png
+    avatar: mxc://half-shot.uk/2876e89ccade4cb615e210c458e2a7a6883fe17d
     prefix: "!feeds"
     service: feeds
 metrics:
@@ -182,7 +182,7 @@ sentry:
 permissions:
   # (Optional) Permissions for using the bridge. See docs/setup.md#permissions for help
 
-  - actor: example.com
+  - actor: openearth.space # change to your domain
     services:
       - service: "*"
         level: admin
@@ -197,13 +197,12 @@ listeners:
     bindAddress: 0.0.0.0
     resources:
       - webhooks
-  # - port: 9001
-  #   bindAddress: 127.0.0.1
-  #   resources:
-  #     - metrics
-  #     - provisioning
-  # - port: 9002
-  #   bindAddress: 0.0.0.0
-  #   resources:
-  #     - widgets
-
+  - port: 9001
+    bindAddress: 0.0.0.0
+    resources:
+      - metrics
+      - provisioning
+  - port: 9002
+    bindAddress: 0.0.0.0
+    resources:
+      - widgets

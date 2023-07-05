@@ -19,9 +19,9 @@ imagePullSecrets: []
 ## Ref: https://github.com/vector-im/element-web/blob/develop/config.sample.json
 ##
 defaultServer:
-  url: ''
-  name: ''
-  # identity_url: 'https://vector.im'
+  url: 'http://openearth.space' # change to your domain url
+  name: 'openearth' # change to your server name
+  identity_url: 'https://vector.im' # delete if not needed
 
 ## Element configuration
 ## Ref: https://github.com/vector-im/element-web/blob/develop/config.sample.json
@@ -85,12 +85,12 @@ service:
 ## Ingress configuration.
 ##
 ingress:
-  enabled: false
+  enabled: true
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
-    - chart-example.local
+    - chat.openearth.space # change to your domain 
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
