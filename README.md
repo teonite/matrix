@@ -13,7 +13,10 @@ Before proceeding with the integration, ensure you have the following prerequisi
 <hr />
 
 ## Note
+
 Please customize the default domain in this guide, `openearth.space`, to match your specific requirements.
+
+Remember, the hookshot will **not** work properly in end-to-end encrypted rooms.
 
 ## Table of Contents
 
@@ -29,7 +32,7 @@ Please customize the default domain in this guide, `openearth.space`, to match y
     - [Registration config map](#hookshot-registration-config-map)
     - [Config map](#hookshot-config-map)
     - [values.yaml configuration](#change-valuesyaml)
-   -  [Hookshot ingress](#hookshot-ingress)
+  - [Hookshot ingress](#hookshot-ingress)
 
 <hr />
 
@@ -41,7 +44,7 @@ For element installation follow theses steps:
    ```bash
    cp ./values.yaml.example ./values.yaml
    ```
-2. Open and fill fields inside `values.yaml`  depending on your needs.
+2. Open and fill fields inside `values.yaml` depending on your needs.
 
    Make sure `defaultServer.url` uses correct protocol.
 
@@ -87,7 +90,7 @@ You will also require some federation guides, either in the form of a .well-know
 When using a well-known entry, you will need to have a valid cert for whatever subdomain you wish to serve Synapse on.
 When using an SRV record, you will additionally need a valid cert for the main domain that you're using for your MXIDs.
 
-### Blank installation with hookshot 
+### Blank installation with hookshot
 
 > Before synapse installation make sure you already created [hookshot registration config map](#hookshot-registration-config-map).
 
@@ -103,8 +106,8 @@ To integrate [matrix-hookshoot](https://github.com/matrix-org/matrix-hookshot) t
 
    ```yaml
    extraConfig:
-      app_service_config_files:
-      - /synapse/config/appservices/registration.yml
+     app_service_config_files:
+       - /synapse/config/appservices/registration.yml
    ```
 
    and
@@ -120,15 +123,15 @@ To integrate [matrix-hookshoot](https://github.com/matrix-org/matrix-hookshot) t
 
    ```
 
-   > Don't forget to change **serverName** 
-   You may also need to configure `ingress` inside `values.yaml`.
+   > Don't forget to change **serverName**
+   > You may also need to configure `ingress` inside `values.yaml`.
 
 3. In `/matrix-synapse` folder run:
 
    `bash
-   helm dependency build
-   helm install matrix-synapse . --values=values.yaml
- `
+  helm dependency build
+  helm install matrix-synapse . --values=values.yaml
+`
 
    Please ensure that you have the necessary access and permissions to perform the installation process.
 
@@ -229,15 +232,17 @@ To set up Hookshot config map, follow these steps:
 1. Open `matrix-hookshot/config/` folder and execute the following command::
 
    ```bash
-       cp ./config.yml.example config.yml
+   cp ./config.yml.example config.yml
    ```
 
 2. Edit `config.yml` file.
-   Make sure `url` and `mediaURL` uses correct protocol.
 
-   > The url in the configuration must match the Synapse server URL.
+   It might be helpful to refer to the [official documentation](https://matrix-org.github.io/matrix-hookshot/) when editing `config.yml`.
+
+   > The url in the configuration must match the Synapse server URL and use correct protocol.
 
 3. Generate a passkey by running the following command:
+
    ```bash
    openssl genpkey -out passkey.pem -outform PEM -algorithm RSA -pkeyopt rsa_keygen_bits:4096
    ```
@@ -252,11 +257,12 @@ To set up Hookshot config map, follow these steps:
 
 ### Change values.yaml
 
-To configure matrix-hookshot to work on Kubernetes, you need to modify the values. Follow these steps: 
+To configure matrix-hookshot to work on Kubernetes, you need to modify the values. Follow these steps:
 
 0. If you haven't already created the [hookshot's config map](#hookshot-config-map), do it now.
 
 1. Open `matrix-hookshot/chart` directory, and execute:
+
    ```bash
    cp ./values.yaml.example ./values.yaml
    ```
@@ -296,7 +302,6 @@ To configure matrix-hookshot to work on Kubernetes, you need to modify the value
    kubectl apply -f ingress.yaml
    ```
 
-
 ### Update hootshot's config on kubernetes
 
 If you already have hookshot working fine on kubernetes and want to updated config, registration file, passkey or githubKey, follow these steps:
@@ -305,17 +310,17 @@ If you already have hookshot working fine on kubernetes and want to updated conf
 
 2. In created folder retrieve the hookshot config map using the following command:
 
-```bash
-kubectl get configmap hookshot-custom-config -o json > hookshot-config.json
-```
+   ```bash
+   kubectl get configmap hookshot-custom-config -o json > hookshot-config.json
+   ```
 
 3. Separate the contents of the config map into matching files by executing the following script:
 
-```bash
-cat hookshot-config.json | jq -r '.data | keys[]' | while read -r key; do
-  cat hookshot-config.json | jq -r --arg key "$key" '.data[$key]' > "./$key"
-done
-```
+   ```bash
+   cat hookshot-config.json | jq -r '.data | keys[]' | while read -r key; do
+   cat hookshot-config.json | jq -r --arg key "$key" '.data[$key]' > "./$key"
+   done
+   ```
 
 4. Edit files as you want
 
@@ -326,5 +331,5 @@ done
 6. Rerun hookshot's deployment, by using the following command:
 
    ```bash
-   kubectl rollout restart deployment <deployment-name>
+   kubectl rollout restart deployment matrix-hookshot
    ```
