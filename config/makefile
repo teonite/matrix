@@ -15,7 +15,7 @@ install_synapse_blank: check_dependencies create-hookshot-registration-file
 	cp ./synapse.yaml ../ananace/charts/matrix-synapse/values.yaml
 	@cd ../ananace/charts/matrix-synapse && \
 	if [ ! -f "charts/postgresql/Chart.yaml" ] || [ ! -f "charts/redis/Chart.yaml" ]; then \
-		helm dependency build; \
+		helm dependency update; \
 	fi
 	cd ../ananace/charts/matrix-synapse/ && helm install matrix-synapse . --values=values.yaml
 	kubectl rollout status deployment matrix-synapse
