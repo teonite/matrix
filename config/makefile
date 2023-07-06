@@ -6,29 +6,31 @@ check_dependencies:
 	@kubectl cluster-info > /dev/null 2>&1 || { echo "Cannot connect to Kubernetes cluster. Please make sure you have the necessary configuration and connectivity."; exit 1; }
  
 install_element_web: check_dependencies
-# chcek if already exist
 	cp ./element-web.yaml ../ananace/charts/element-web/values.yaml
 	cd ../ananace/charts/element-web &&  helm install element-web . --values=values.yaml
-
 
 # add element tls setup
 
 install_synapse_blank: check_dependencies create-hookshot-registration-file
-# chcek if already exist
-
 	cp ./synapse.yaml ../ananace/charts/matrix-synapse/values.yaml
 	@cd ../ananace/charts/matrix-synapse && \
 	if [ ! -f "charts/postgresql/Chart.yaml" ] || [ ! -f "charts/redis/Chart.yaml" ]; then \
 		helm dependency build; \
 	fi
 	cd ../ananace/charts/matrix-synapse/ && helm install matrix-synapse . --values=values.yaml
+	kubectl rollout status deployment matrix-synapse
 
-create-hookshot-registration-file:
+create-hookshot-registration-file: 
 	@kubectl get configmap -n default registration-hookshot >/dev/null 2>&1 && \
 	  (echo "Registration-matrix already exists."; exit 0) || \
 	  (test -f ./appservices/hookshot/registration.yml && \
 	   (echo "Creating registration-matrix"; kubectl create configmap registration-hookshot -n default --from-file=./appservices/hookshot/registration.yml --dry-run=client -o yaml | kubectl apply -f -)) || \
 	  (echo "File './appservices/hookshot/registration.yml' does not exist."; exit 1)
+
+check-hookshot-registration-file:
+	@kubectl get configmap -n default registration-hookshot >/dev/null 2>&1 && \
+	  (echo "Registration-matrix already exists."; exit) || \
+	  (echo "Registration-matrix do NOT exist. Edit /appservices/hookshot/registration.yml and run: make  create-hookshot-registration-file";)
 
 create-hookshot-config-file: create-hookshot-registration-file
 	@kubectl get configmap -n default hookshot-config >/dev/null 2>&1 && \
@@ -48,12 +50,17 @@ create-hookshot-ingress:
 
 
 install_hookshot: create-hookshot-ingress create-hookshot-config-file
+	sed -i.bak 's/^appVersion:.*/appVersion: "latest"/' ../matrix-hookshot/helm/hookshot/Chart.yaml && rm ../matrix-hookshot/helm/hookshot/Chart.yaml.bak
 	$(eval RELEASE_EXIST := $(shell helm list -q | grep -Fx matrix-hookshot))
 	$(if $(RELEASE_EXIST), \
 		$(info Helm release name 'matrix-hookshot' already exists. Please choose a different name.), \
 		cp ./appservices/hookshot/values.yaml ../matrix-hookshot/helm/hookshot/values.yaml && \
 		cd ../matrix-hookshot/helm/hookshot && helm install matrix-hookshot . --values=values.yaml \
 	)
-# dodac zmiane Chart.yaml appVerison na latest
-# update synapse 
-check_if_minikube_exists:
+tls_update: check_dependencies
+	kubectl apply -f tls-secret.yaml
+
+	cp ./element-web.yaml ../ananace/charts/element-web/values.yaml
+	cd ../ananace/charts/element-web &&  	helm upgrade element-web . --values=values.yaml
+
+
