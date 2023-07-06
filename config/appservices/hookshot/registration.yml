@@ -28,9 +28,9 @@ namespaces:
       exclusive: true
 
 sender_localpart: hookshot
-# Main bot username
+
 url: "http://openearth.space:9002"
-# Change openearth.space so it match hookshot's URL and bridge.port in your hookshot's config file
+# This should match hookshot's URL and bridge.port in your hookshot's config file
 rate_limited: false
 
 # [EXPERIMENTAL] If enabling encryption

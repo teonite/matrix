@@ -149,9 +149,9 @@ config:
 ## Ref: https://github.com/matrix-org/synapse/blob/develop/docs/sample_config.yaml
 ##
 
-extraConfig: 
+extraConfig:
   app_service_config_files:
-    - /synapse/config/appservices/registration.yml
+    - /synapse/config/hookshot/registration.yml
   
   #  old_signing_keys:
 #    "ed25519:id": { key: "base64string", expired_ts: 123456789123 } 
@@ -211,9 +211,10 @@ synapse:
   ## Additional volumes to mount into Synapse
   ##
   extraVolumes:
-    - name: appservices
+    - name: hookshot
       configMap:
         name: registration-hookshot
+
   #  - name: spamcheck
   #    flexVolume:
   #      driver: ananace/git-live
@@ -222,8 +223,8 @@ synapse:
   #        interval: 1d
   #      readOnly: true
   extraVolumeMounts:
-    - name: appservices
-      mountPath: /synapse/config/appservices
+    - name: hookshot
+      mountPath: /synapse/config/hookshot
   #  - name: spamcheck
   #    mountPath: /usr/local/lib/python3.7/site-packages/company
 

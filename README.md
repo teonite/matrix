@@ -179,7 +179,7 @@ To update an already running Synapse server in Kubernetes, follow these steps:
 
 4. Apply updated files to the Kubernetes cluster by running:
    ```bash
-      kubectl apply -f values.yaml --force
+      kubectl apply -f deployment.yaml --force
       kubectl apply -f configMap.yaml --force
    ```
 5. Verify the status of the update by checking the rollout status of the deployment:

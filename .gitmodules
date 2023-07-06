@@ -1,0 +1,6 @@
+[submodule "ananace"]
+	path = ananace
+	url = https://gitlab.com/ananace/charts/
+[submodule "matrix-hookshot"]
+	path = matrix-hookshot
+	url = https://github.com/matrix-org/matrix-hookshot

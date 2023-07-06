@@ -1,9 +1,2 @@
 .DS_Store
-*.yaml
-*.yml
 *.pem
-!Chart.yaml
-*/charts/*
-!**/templates/**/*
-!/tls-setup/*
-Chart.lock

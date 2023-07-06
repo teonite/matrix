@@ -4,20 +4,20 @@ metadata:
   name: hookshot-ingress
 spec:
   rules:
-    - host: openearth.space # change to your domain
+    - host: openearth.space
       http:
         paths:
-          - path: /hookshot/webhook # select your own webhook url, remember it has to match config.yaml generic urlPrefix
-            pathType: Prefix
-            backend:
-              service:
-                name: matrix-hookshot
-                port:
-                  number: 9000
-          - path: /
+          - path: /hookshot/webhook
             pathType: Prefix
             backend:
               service:
                 name: matrix-hookshot
                 port:
                   number: 9002
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: matrix-hookshot
+                port:
+                  number: 9000
