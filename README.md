@@ -1,4 +1,4 @@
-# Integrate [matrix-hookshoot](https://github.com/matrix-org/matrix-hookshot) to [matrix-org/synapse](https://github.com/matrix-org/synapse) with [vector-im/element-web](https://github.com/vector-im/element-web)
+# Appservices integration with [matrix-org/synapse](https://github.com/matrix-org/synapse) 
 
 ## Prerequisites
 
@@ -16,10 +16,11 @@ Before proceeding with the integration, ensure you have the following prerequisi
 
 Please customize the default domain in this guide, `openearth.space`, to match your specific requirements.
 
-Remember, the hookshot will **not** work properly in end-to-end encrypted rooms.
+Remember, appservices will **not** work properly in end-to-end encrypted rooms.
+
+You can specify namespaces and other values in `config/config.sh`.
 
 ## Table of Contents
-
 - [Element installation](#element-installation)
   - [Element TLS setup](#element-tls-setup)
 - [Synapse installation](#synapse-installation)
@@ -33,20 +34,21 @@ Remember, the hookshot will **not** work properly in end-to-end encrypted rooms.
 
 ## Element Installation
 
-For element installation open `config` directory, configure `element-web.yaml` and run:
+For element installation edit `/config/element-web.yaml ` and run:
 
 ```
 make install_element_web
 ```
 
+<hr />
+
 ### Element TLS Setup
 
 In order to add tls to your **element web** you have to follow theses steps:
 
-1.  Open `config` folder and edit `tls-secret.yaml`
+1.  Edit `/config/tls-secret.yaml`
 
 2.  In `config/element-web.yaml` ingress's hosts section fill tls like this:
-
     ```yaml
     tls:
         - secretName: element-tls-secret # This must match secretName from tls-secret.yaml
@@ -54,7 +56,7 @@ In order to add tls to your **element web** you have to follow theses steps:
             -  chat.openearth.space  # This url must match actual domain or subdoamin url
     ```
 
-3.  Run:
+3.  Execute:
 
    ```
    make tls_update
@@ -73,7 +75,7 @@ When using an SRV record, you will additionally need a valid cert for the main d
 
 To integrate [matrix-hookshoot](https://github.com/matrix-org/matrix-hookshot) to [matrix-org/synapse](https://github.com/matrix-org/synapse) from scratch, follow these steps:
 
-1. Open `config` folder and edit `synapse.yaml` as you want, but make sure to leave the following configurations:
+1. Edit `/config/synapse.yaml` as you want, but make sure to leave the following configurations:
 
    ```yaml
    extraConfig:
@@ -94,7 +96,7 @@ To integrate [matrix-hookshoot](https://github.com/matrix-org/matrix-hookshot) t
 
    ```
 
-2. Run inside `config` folder:
+2. Execute:
 
    ```
    make install_synapse_blank
@@ -104,9 +106,11 @@ To integrate [matrix-hookshoot](https://github.com/matrix-org/matrix-hookshot) t
 
    Keep in mind synapse server initialization make take some time.
 
+<hr />
+
 ### Adding hookshot to already existing synapse
 
-> Before proceeding with the Synapse update, please ensure that you have already created the hookshot registration by running ` make check-hookshot-registration-file` in `config` folder.
+> Before proceeding with the Synapse update, please ensure that you have already created the hookshot registration by running :  `make check-hookshot-registration-file`
 
 To update an already running Synapse server in Kubernetes, follow these steps:
 
@@ -165,7 +169,7 @@ Please ensure that you have the necessary access and permissions to perform the 
 
 1. Open `config/appservices/hookshot` folder and edit files inside as needed.
 
-2. In `config` dictionary run:
+2. Execute:
    ```
    make install_hookshot
    ```
@@ -178,7 +182,6 @@ Keep in mind that hookshot need some time to start responding or joining rooms
 
 ### Update hootshot's config on kubernetes
 
-
 If you already have hookshot working fine on kubernetes and want to updated config, registration file, passkey or githubKey, follow these steps:
 
 1. Create an empty folder to store the extracted files.
@@ -188,7 +191,7 @@ If you already have hookshot working fine on kubernetes and want to updated conf
    ```bash
    kubectl get configmap hookshot-config -o json > hookshot-config.json
    ```
-
+   > Where `hookshot-config` is config map used by hookshot
 3. Separate the contents of the config map into matching files by executing the following script:
 
    ```bash
