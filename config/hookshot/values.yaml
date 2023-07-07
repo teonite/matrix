@@ -1,0 +1,119 @@
+---
+# Number of replicas to deploy. Consequences of using multiple Hookshot replicas currently unknown.
+replicaCount: 1
+
+image:
+  # Repository to pull hookshot image from
+  repository: halfshot/matrix-hookshot
+  # Pull policy for Hookshot image
+  pullPolicy: IfNotPresent
+  # Image tag to pull. Defaults to chart's appVersion value as set in Chart.yaml
+  tag:
+
+# List of names of k8s secrets to be used as ImagePullSecrets for the pod
+imagePullSecrets: []
+
+# Name override for helm chart
+nameOverride: ""
+
+# Full name override for helm chart
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use. If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# Extra annotations for Hookshot pod
+podAnnotations: {}
+
+# Pod security context settings
+podSecurityContext: {}
+# fsGroup: 2000
+
+# Security context settings
+securityContext: {}
+# capabilities:
+#   drop:
+#   - ALL
+# readOnlyRootFilesystem: true
+# runAsNonRoot: true
+# runAsUser: 1000
+
+service:
+  # Service type for Hookshot service
+  type: ClusterIP
+  # Port for Hookshot service
+  port: 80
+  # Extra annotations for service
+  annotations: {}
+  # Extra labels for service
+  labels: {}
+
+  webhook:
+    # Webhook port as configured in config file
+    port: 9000
+  metrics:
+    # Metrics port as configured in config file
+    port: 9001
+  appservice:
+    # Appservice port as configured in config file
+    port: 9002
+
+# ingress:
+#   webhook:
+#     # Enable ingress for webhook
+#     enabled: false
+#     # Ingress class name for webhook ingress
+#     className: ""
+#     # Annotations for webhook ingress
+#     annotations: {}
+#     # Host configuration for webhook ingress
+#     hosts: []
+#     # TLS configuration for webhook ingress
+#     tls: []
+
+#   appservice:
+#     # Enable ingress for appservice
+#     enabled: false
+#     # Ingress class name for appservice ingress
+#     className: ""
+#     # Annotations for appservice ingress
+#     annotations: {}
+#     # Host configuration for appservice ingress
+#     hosts: []
+#     # TLS configuration for appservice ingress
+#     tls: []
+
+# Pod resource requests / limits
+  resources: {}
+
+# We usually recommend not to specify default resources and to leave this as a conscious
+# choice for the user. This also increases chances charts run on environments with little
+# resources, such as Minikube. If you do want to specify resources, uncomment the following
+# lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+# limits:
+#   cpu: 100m
+#   memory: 128Mi
+# requests:
+#   cpu: 100m
+#   memory: 128Mi
+
+autoscaling:
+  enabled: false
+
+# Node selector parameters
+nodeSelector: {}
+# Tolerations for deployment
+tolerations: []
+
+# Affinity settings for deployment
+affinity: {}
+
+hookshot:
+  # Name of existing ConfigMap with valid Hookshot configuration
+  existingConfigMap: hookshot-config
+
