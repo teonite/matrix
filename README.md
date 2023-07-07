@@ -167,7 +167,7 @@ Please ensure that you have the necessary access and permissions to perform the 
 
 ### Basic installation
 
-1. Open `config/appservices/hookshot` folder and edit files inside as needed.
+1. Open `config/hookshot` folder and edit files inside as needed.
 
 2. Execute:
    ```

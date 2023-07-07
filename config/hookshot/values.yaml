@@ -63,30 +63,31 @@ service:
     # Appservice port as configured in config file
     port: 9002
 
-# ingress:
-#   webhook:
-#     # Enable ingress for webhook
-#     enabled: false
-#     # Ingress class name for webhook ingress
-#     className: ""
-#     # Annotations for webhook ingress
-#     annotations: {}
-#     # Host configuration for webhook ingress
-#     hosts: []
-#     # TLS configuration for webhook ingress
-#     tls: []
+# We use our own ingress so there is no need to enable those ones
+ingress:
+  webhook:
+    # Enable ingress for webhook
+    enabled: false
+    # Ingress class name for webhook ingress
+    className: ""
+    # Annotations for webhook ingress
+    annotations: {}
+    # Host configuration for webhook ingress
+    hosts: []
+    # TLS configuration for webhook ingress
+    tls: []
 
-#   appservice:
-#     # Enable ingress for appservice
-#     enabled: false
-#     # Ingress class name for appservice ingress
-#     className: ""
-#     # Annotations for appservice ingress
-#     annotations: {}
-#     # Host configuration for appservice ingress
-#     hosts: []
-#     # TLS configuration for appservice ingress
-#     tls: []
+  appservice:
+    # Enable ingress for appservice
+    enabled: false
+    # Ingress class name for appservice ingress
+    className: ""
+    # Annotations for appservice ingress
+    annotations: {}
+    # Host configuration for appservice ingress
+    hosts: []
+    # TLS configuration for appservice ingress
+    tls: []
 
 # Pod resource requests / limits
   resources: {}

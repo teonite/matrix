@@ -5,6 +5,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: hookshot-ingress # Ingress name 
+  namespace: hehe # Must match hookshot namespace defined in `config.sh` 
 spec:
   rules:
     - host: openearth.space # Host url 

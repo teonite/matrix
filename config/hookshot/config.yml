@@ -130,7 +130,7 @@ metrics:
 
 # (Optional) Message queue / cache configuration options for large scale deployments.
 # For encryption to work, must be set to monolithic mode and have a host & port specified.
-# Ref: 
+# Ref: https://matrix-org.github.io/matrix-hookshot/latest/advanced/workers.html?highlight=queue#running-in-multi-process-mode
 queue:
   monolithic: true
   port: 6379

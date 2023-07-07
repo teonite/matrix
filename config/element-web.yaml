@@ -15,7 +15,7 @@ imagePullSecrets: []
 # Default server for the Element install. (Required)
 # This will be default url while opening element's page.
 defaultServer:
-  url: 'https://openearth.space:8008' # Your synapse server url
+  url: 'https://openearth.space' # Your synapse server url
   name: 'openearth' # This name will be shown to users
   identity_url: 'https://vector.im' # The URL of the Identity service
 
