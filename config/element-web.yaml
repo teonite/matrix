@@ -1,10 +1,8 @@
 ---
-## Number of replicas
-##
+# Number of replicas
 replicaCount: 1
 
-## Image configuration
-##
+# Image configuration 
 image:
   repository: vectorim/element-web
   pullPolicy: IfNotPresent
@@ -14,40 +12,36 @@ imagePullSecrets: []
 # nameOverride: ""
 # fullnameOverride: ""
 
-## Default server for the Element install. (Required)
-## This will configure the default_server_config block in the config.json
-## Ref: https://github.com/vector-im/element-web/blob/develop/config.sample.json
-##
+# Default server for the Element install. (Required)
+# This will be default url while opening element's page.
 defaultServer:
-  url: 'http://openearth.space' # change to your domain url
-  name: 'openearth' # change to your server name
-  identity_url: 'https://vector.im' # delete if not needed
+  url: 'https://openearth.space' # Your synapse server url
+  name: 'openearth' # This name will be shown to users
+  identity_url: 'https://vector.im' # The URL of the Identity service
 
-## Element configuration
-## Ref: https://github.com/vector-im/element-web/blob/develop/config.sample.json
-##
+# Element extra configuration
+# Ref: https://github.com/vector-im/element-web/blob/develop/config.sample.json
 config: {}
 
 ## Configuration to add into the nginx server object
-##
 nginxConfig: |-
   add_header X-Frame-Options SAMEORIGIN;
   add_header X-Content-Type-Options nosniff;
   add_header X-XSS-Protection "1; mode=block";
   add_header Content-Security-Policy "frame-ancestors 'none'";
 
-## Configuration for mounting additional volumes into the application container.
-##
+# Configuration for mounting additional volumes into the application container.
+
 extraVolumes: {}
 # - name: backgrounds
 #   persistentVolumeClaim:
 #     claimName: element-backgrounds
+
 extraVolumeMounts: {}
 # - name: backgrounds
 #   mountPath: /app/themes/element/img/backgrounds/
 
-## Configures an application-specific service account.
-##
+# Configures an application-specific service account.
 serviceAccount:
   create: true
 
@@ -57,17 +51,14 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
-## Additional annotations to add to the pod.
-##
+# Additional annotations to add to the pod.
 podAnnotations: {}
 
-## Security context configuration to add to the pod.
-##
+# Security context configuration to add to the pod.
 podSecurityContext: {}
   # fsGroup: 2000
 
-## Security context configuration to add to the container inside the pod.
-##
+# Security context configuration to add to the container inside the pod.
 securityContext: {}
   # capabilities:
   #   drop:
@@ -76,32 +67,29 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1000
 
-## Service configuration.
-##
+# Service configuration.
 service:
   type: ClusterIP
   port: 80
 
-## Ingress configuration.
-##
+# Ingress configuration.
 ingress:
   enabled: true
   annotations: {}
     # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
+    # kubernetes.io/ss-acme: "true"
   hosts:
-    - chat.openearth.space # change to your domain 
-  tls: []
+    - chat.openearth.space # Url on which element will be hosted
+  tls: [] 
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
 
-  ## Set the name of the IngressClass cluster resource (optional)
-  ## https://kubernetes.io/docs/reference/kubernetes-api/service-resources/ingress-v1/#IngressSpec
+  # Set the name of the IngressClass cluster resource (optional)
+  # https://kubernetes.io/docs/reference/kubernetes-api/service-resources/ingress-v1/#IngressSpec
   # className: can-be-anything
 
-## Resource configuration for the application.
-##
+# Resource configuration for the application.
 resources: {}
   # limits:
   #   cpu: 100m
@@ -110,8 +98,7 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
-## Configure auto-scaling for the application.
-##
+# Configure auto-scaling for the application.
 autoscaling:
   enabled: false
   minReplicas: 1
@@ -119,14 +106,11 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
-## Node selectors to use when deploying the application.
-##
+# Node selectors to use when deploying the application.
 nodeSelector: {}
 
-## Tolerations to apply to the application.
-##
+# Tolerations to apply to the application.
 tolerations: []
 
-## Affinities to set on the application.
-##
+# Affinities to set on the application.
 affinity: {}
