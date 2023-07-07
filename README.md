@@ -116,7 +116,7 @@ To integrate appservices to [matrix-org/synapse](https://github.com/matrix-org/s
 
 ### Adding appservices to already existing synapse 
 
-> Before proceeding with the Synapse update, please ensure that you have already created the hookshot registration by running :  `make check_registration_files`
+> Before proceeding with the Synapse update, please ensure that you have already created the hookshot registration by running :  `make check_hookshot_registration_file`
 
 To update an already running Synapse server in Kubernetes, follow these steps:
 
