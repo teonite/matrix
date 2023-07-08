@@ -35,12 +35,6 @@ install_synapse_blank: check_dependencies postql_ingress create_hookshot_registr
 	cd ./ananace/charts/matrix-synapse/ && helm install ${synapse_deployment_name} . --values=values.yaml  -n ${synapse_namespace}
 	kubectl rollout status deployment ${synapse_deployment_name} -n ${synapse_namespace}
 
-# Postsql ingress
-postql_ingress: synapse_namsepace
-	@test -f ${hookshot_ingress_file_path} && \
-	(kubectl apply -f ${hookshot_ingress_file_path})|| \
-	(echo "File '${hookshot_ingress_file_path}' does not exist."; exit 1)
-
 
 # Check all required registration files
 check_registration_files:
