@@ -15,7 +15,7 @@ element_web_tls_file_path="./config/tls-secret.yaml" # Element's tls path
 
 # Synapse
 synapse_deployment_name="matrix-synapse" # Synapse's deployment name
-synapse_namespace="hehe" # Synapse's depolyment namesapce name
+synapse_namespace="default" # Synapse's depolyment namesapce name
 
 synapse_values_path="./config/synapse.yaml"  # Synapse's values path
 
