@@ -1,11 +1,45 @@
 include ./config/config.sh
 
+BLUE := \033[1;34m # Blue colour
+CE := \033[0m # Colour end
+
+default:
+	@echo 'Please choose target - for assistance type: `make help`'
+
+help:
+	@echo " Usage: make${BLUE}[target]${CE}"
+	@echo "\n ===== basic ====="
+	@echo "${BLUE}check_dependencies${CE} - Check if required dependencies are installed."
+	@echo "${BLUE}check_registration_files${CE} - Check existence of required registration files."
+	@echo "\n ===== element-web ====="
+	@echo "${BLUE}element_web_namsepace${CE} - Check/create element-web namespace."
+	@echo "${BLUE}install_element_web${CE} - Install Element-web using Helm."
+	@echo "${BLUE}tls_update${CE} - Update Element-web TLS configuration. ( read README.md )"
+	@echo "\n ===== synapse ====="
+	@echo "${BLUE}synapse_namsepace${CE} - Check/create synapse namespace."
+	@echo "${BLUE}install_synapse_blank${CE} - Install Synapse server with hookshot and mautrix-telegram configuration."
+	@echo "\n ===== hookshot ====="
+	@echo "${BLUE}create_hookshot_registration_file${CE} - Create hookshot registration file."
+	@echo "${BLUE}check_hookshot_registration_file${CE} - Check existence of hookshot registration file."
+	@echo "${BLUE}hookshot_namsepace${CE} - Check/create hookshot namespace."
+	@echo "${BLUE}create_hookshot_config_file${CE} - Create hookshot config file for installation."
+	@echo "${BLUE}create_hookshot_ingress${CE} - Create hookshot ingress for installation."
+	@echo "${BLUE}install_hookshot${CE} - Install hookshot."
+	@echo "\n ===== mautrix-telegram ====="
+	@echo "${BLUE}create_telegram_database${CE} - Create mautrix-telegram database."
+	@echo "${BLUE}create_telegram_registration_file${CE} - Create mautrix-telegram registration file."
+	@echo "${BLUE}check_telegram_registration_file${CE} - Check existence of mautrix-telegram registration file."
+	@echo "${BLUE}telegram_namsepace${CE} - Check/create mautrix-telegram namespace."
+	@echo "${BLUE}install_telegram${CE}  - Install mautrix-telegram."
+
+
 # Checking dependencies
 check_dependencies:
 	@which helm > /dev/null 2>&1 || { echo "Helm command not found. Please install Helm and make sure it's in your system's PATH."; exit 1; }
 	@which kubectl > /dev/null 2>&1 || { echo "Kubectl command not found. Please install Helm and make sure it's in your system's PATH."; exit 1; }
 	@kubectl cluster-info > /dev/null 2>&1 || { echo "Cannot connect to Kubernetes cluster. Please make sure you have the necessary configuration and connectivity."; exit 1; }
- 
+	@echo "✅ dependencies check"
+	
 # Check element-web namespace, and generate if do not exist
 element_web_namsepace:
 		@kubectl get namespace ${element_web_namespace} > /dev/null 2>&1 || (echo "Namespace '${element_web_namespace}' does not exist, creating...";  kubectl create namespace ${element_web_namespace})
