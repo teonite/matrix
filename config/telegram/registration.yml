@@ -1,0 +1,26 @@
+# mautrix-telegram registration id. This can be anything, but must be unique within your synapse server
+id: telegram
+# AppSecret token, this can be a random string, but must match as_token in values file
+as_token: bbbbb
+# HomeserverSecret token, this can be a random string, but must match as_token in values file
+hs_token: bbbbb
+# Below we prevent users from registering using the following regexes,
+# mautrix-telegram will also use them while creating bot accounts.
+# Change "openearth.space" to your synapse's server name.
+namespaces:
+    users:
+    - exclusive: true
+      regex: '@telegram_.*:openearth\.space'
+    - exclusive: true
+      regex: '@telegrambot:openearth\.space'
+    aliases:
+    - exclusive: true
+      regex: \#telegram_.*:openearth\.space
+# This should match mautrix-telegram's appservice URL 
+url: https://openearth.space/mautrix-telegram
+sender_localpart: telegram
+rate_limited: false
+
+# [EXPERIMENTAL] If enabling encryption
+de.sorunome.msc2409.push_ephemeral: true
+push_ephemeral: true
