@@ -17,7 +17,10 @@ namespaces:
     - exclusive: true
       regex: \#telegram_.*:openearth\.space
 # This should match mautrix-telegram's appservice URL 
-url: https://openearth.space/mautrix-telegram
+# Structure for local cluster looks like this:
+# http://<deployment_name>:<namespace>.svc.cluster.local:<port>
+url: "http://mautrix-telegram.matrix.svc.cluster.local:29317"
+
 sender_localpart: telegram
 rate_limited: false
 

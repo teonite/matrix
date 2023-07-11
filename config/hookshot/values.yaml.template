@@ -1,4 +1,6 @@
 ---
+# In this file you usually just need to delete un used ports in service value.
+
 # Number of replicas to deploy. Consequences of using multiple Hookshot replicas currently unknown.
 replicaCount: 1
 
@@ -53,12 +55,17 @@ service:
   # Extra labels for service
   labels: {}
 
+  # You should not delete this part
   webhook:
     # Webhook port as configured in config file
     port: 9000
+
+  # If you don't use metrics feel free to delete this part
   metrics:
     # Metrics port as configured in config file
     port: 9001
+    
+  # You should not delete this part
   appservice:
     # Appservice port as configured in config file
     port: 9002
@@ -115,6 +122,6 @@ tolerations: []
 affinity: {}
 
 hookshot:
-  # Name of existing ConfigMap with valid Hookshot configuration
+  # Name of existing ConfigMap with valid Hookshot configuration, must match config.sh hookshot_config_file_name
   existingConfigMap: hookshot-config
 

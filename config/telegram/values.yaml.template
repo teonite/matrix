@@ -137,7 +137,9 @@ config:
     # Changing these values requires regeneration of the registration.
     appservice:
         # The address that the synapse server can use to connect to this appservice. ( Change )
-        address: https://openearth.space/mautrix-telegram
+        # Structure for local cluster looks like this:
+        # http://<deployment_name>:<namespace>.svc.cluster.local:<port>
+        address: "http://mautrix-telegram.matrix.svc.cluster.local:29317"
         # When using https:// the TLS certificate and key files for the address.
         tls_cert: false
         tls_key: false
@@ -791,20 +793,21 @@ config:
 
 # This section must match registration.yml file, basically copy and past it here after configuration
 registration:
-    id: telegram
-    as_token: bbbbb
-    hs_token: bbbbb
-    namespaces:
-        users:
-        - exclusive: true
-          regex: '@telegram_.*:openearth\.space'
-        - exclusive: true
-          regex: '@telegrambot:openearth\.space'
-        aliases:
-        - exclusive: true
-          regex: \#telegram_.*:openearth\.space
-    url: https://openearth.space/mautrix-telegram
-    sender_localpart: telegram
-    rate_limited: false
-    de.sorunome.msc2409.push_ephemeral: true
-    push_ephemeral: true
+    # EXAMPLE
+    # id: telegram
+    # as_token: bbbbb
+    # hs_token: bbbbb
+    # namespaces:
+    #     users:
+    #     - exclusive: true
+    #       regex: '@telegram_.*:openearth\.space'
+    #     - exclusive: true
+    #       regex: '@telegrambot:openearth\.space'
+    #     aliases:
+    #     - exclusive: true
+    #       regex: \#telegram_.*:openearth\.space
+    # url: https://openearth.space/mautrix-telegram
+    # sender_localpart: telegram
+    # rate_limited: false
+    # de.sorunome.msc2409.push_ephemeral: true
+    # push_ephemeral: true

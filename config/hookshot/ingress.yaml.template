@@ -18,10 +18,3 @@ spec:
                 name: matrix-hookshot # Hookshot's deployment value ( must match hookshot_deployment_name in config file )
                 port:
                   number: 9000 # Webhook's port defined in config file 
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: matrix-hookshot # Hookshot's deployment value ( must match hookshot_deployment_name in config file )
-                port:
-                  number: 9002 # Hookshot's app port defined in config file 
