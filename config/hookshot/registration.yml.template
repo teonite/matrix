@@ -21,6 +21,8 @@ namespaces:
       exclusive: true
     - regex: "@_webhooks_.*:openearth.space"
       exclusive: true
+    - regex: "@_figma_.*:openearth.space"
+      exclusive: true
     - regex: "@feeds:openearth.space"
       exclusive: true
   aliases:

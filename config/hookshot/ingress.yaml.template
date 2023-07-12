@@ -8,10 +8,10 @@ metadata:
   namespace: default # Must match hookshot namespace defined in `config.sh` 
 spec:
   rules:
-    - host: openearth.space # Host url 
+    - host: hookshot.openearth.space # Host url 
       http:
         paths:
-          - path: /hookshot/webhook # Path that hookshot's webhooks will use 
+          - path: / # Path that hookshot's webhooks will use 
             pathType: Prefix
             backend:
               service:

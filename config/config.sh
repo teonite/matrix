@@ -4,7 +4,7 @@
 # These configuration variables will be used when executing the makefile commands.
 # ===== 
 
-namespace="default" # Set this to your kubernetes deployment name, you want to have everything installed
+namespace="matrix" # Set this to your kubernetes deployment name, you want to have everything installed
 
 # Element-web
 element_deployment_name="element-web" # Element's deployment name
@@ -34,6 +34,8 @@ synapse_values_path="./config/synapse.yaml"  # Synapse's values path
     hookshot_deployment_name="matrix-hookshot" # Hookshot's deployment name
     hookshot_deployment_values_file_path="./config/hookshot/values.yaml" # Hookshot's values path, file name must be: values.yaml
 
+    # e2e volumes
+    hookshot_volumes_file_path="./config/hookshot/volumes.yaml"
 
 # Telegram
     # database, we need to connect to databse in order to create new database for telegram integration
