@@ -2,8 +2,10 @@
 bridge:
   # Synapse server name
   domain: openearth.space
-  # Synapse server url
-  url: https://openearth.space:8008
+  # Synapse server url, we gave  local url where
+  # http://<deployment_name>.<namespace>.svc.cluster.local:<port>
+
+  url: http://matrix-synapse.matrix.svc.cluster.local:8008
   # Optional. The URL where media hosted on the synapse is reachable
   # (this should be publicly reachable from the internet)
   mediaUrl: https://openearth.space
@@ -205,7 +207,7 @@ permissions:
     services:
       - service: "*"
         level: admin
-  - actor: "@josh.openearth.space" # Josh user at openearth.space will have admin access to hookshot
+  - actor: "@josh:openearth.space" # Josh user at openearth.space will have admin access to hookshot
     services:
       - service: "*"
         level: admin

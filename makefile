@@ -110,13 +110,14 @@ install_synapse_blank: check_dependencies check_namespace create_hookshot_regist
 		cd ./ananace/charts/matrix-synapse && helm dependency update; \
 	fi
 
-	$(eval RELEASE_EXIST_SYNAPSE := $(shell helm list -q -n ${namespace} | grep -Fx ${synapse_deployment_name}))
+	$(eval RELEASE_EXIST_SYNAPSE := $(shell kubectl get deployments -n ${namespace} | grep -Fx ${synapse_deployment_name}))
 	@if [ -z "$(RELEASE_EXIST_SYNAPSE)" ]; then \
 		cd ./ananace/charts/matrix-synapse/ && helm install ${synapse_deployment_name} . --values=values.yaml -n ${namespace}; \
 	fi
 
 
 	@kubectl rollout status deployment ${synapse_deployment_name} -n ${namespace}
+	@make create_telegram_database
 	@kubectl rollout restart deployment -n ${namespace} ${hookshot_deployment_name}
 	@kubectl rollout restart deployment -n ${namespace} ${telegram_deployment_name}
 
@@ -231,7 +232,7 @@ check_telegram_registration_file:
 
 # make install_telegram
 # Installing mautrix-telegram
-install_telegram: check_dependencies check_namespace create_telegram_registration_file create_telegram_database
+install_telegram: check_dependencies check_namespace create_telegram_registration_file
 	$(eval RELEASE_EXIST := $(shell helm list -q -n ${namespace} | grep -Fx ${telegram_deployment_name}))
 	$(if $(RELEASE_EXIST), \
 		$(info Helm release name ${telegram_deployment_name} already exists.), \
