@@ -128,7 +128,12 @@ extraConfig:
   app_service_config_files:
     - /synapse/config/hookshot/registration.yml
     - /synapse/config/telegram/registration.yml    
-  
+
+  experimental_features:
+    msc3202_device_masquerading: true
+    msc3202_transaction_extensions: true
+    msc2409_to_device_messages_enabled: true
+
   #  old_signing_keys:
 #    "ed25519:id": { key: "base64string", expired_ts: 123456789123 } 
 #  use_presence: false
@@ -862,8 +867,3 @@ ingress:
   # Set the name of the IngressClass cluster resource (optional)
   # https://kubernetes.io/docs/reference/kubernetes-api/service-resources/ingress-v1/#IngressSpec
   # className: can-be-anything
-
-experimental_features:
-  msc3202_device_masquerading: true
-  msc3202_transaction_extensions: true
-  msc2409_to_device_messages_enabled: true

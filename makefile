@@ -84,9 +84,12 @@ check_registration_files:
 # Installs element-web
 install_element_web: check_dependencies check_namespace
 	@test -f ${element_web_values_path} || (echo "❌ File '${element_web_values_path}' does not exist."; exit 1)
-
-	@cp ${element_web_values_path} ./ananace/charts/element-web/values.yaml
-	@cd ./ananace/charts/element-web &&  helm install ${element_deployment_name} . --values=values.yaml -n ${namespace}
+	$(eval RELEASE_EXIST := $(shell helm list -q -n ${namespace} | grep -Fx ${element_deployment_name}))
+	$(if $(RELEASE_EXIST), \
+		$(info Helm release name ${element_deployment_name} already exists.), \
+		cp ${element_web_values_path} ./ananace/charts/element-web/values.yaml && \
+		cd ./ananace/charts/element-web &&  helm install ${element_deployment_name} . --values=values.yaml -n ${namespace} \
+	)
 
 # make tls_update
 # Updates tls for element-web
@@ -105,18 +108,22 @@ tls_update: check_dependencies check_namespace
 install_synapse_blank: check_dependencies check_namespace create_hookshot_registration_file install_hookshot create_telegram_registration_file install_telegram 
 	@test -f ${synapse_values_path} || (echo "❌ File '${synapse_values_path}' does not exist."; exit 1)
 	@cp ${synapse_values_path} ./ananace/charts/matrix-synapse/values.yaml
-	$(eval RELEASE_EXIST := $(shell kubectl get services -n ${namespace} | grep '${synapse_deployment_name}-postgresql'))
+	$(eval RELEASE_EXIST := $(shell kubectl get services -n ${namespace} -o json | jq -r '.items[] | select(.metadata.name | contains("postgresql")).metadata.name'))
 	@if [ -z "$(RELEASE_EXIST)" ]; then \
 		cd ./ananace/charts/matrix-synapse && helm dependency update; \
 	fi
 
-	$(eval RELEASE_EXIST_SYNAPSE := $(shell kubectl get deployments -n ${namespace} | grep -Fx ${synapse_deployment_name}))
+	$(eval RELEASE_EXIST_SYNAPSE := $(shell kubectl get deployments -n ${namespace}  -o json | jq -r '.items[] | select(.metadata.name | contains(${synapse_deployment_name})).metadata.name'))
 	@if [ -z "$(RELEASE_EXIST_SYNAPSE)" ]; then \
 		cd ./ananace/charts/matrix-synapse/ && helm install ${synapse_deployment_name} . --values=values.yaml -n ${namespace}; \
 	fi
 
-
-	@kubectl rollout status deployment ${synapse_deployment_name} -n ${namespace}
+	@kubectl rollout restart deployment ${synapse_deployment_name} -n ${namespace}
+	@while [[ -z $$(kubectl get deployment ${synapse_deployment_name} -n ${namespace} -o jsonpath='{.status.conditions[?(@.type=="Available")].status}') ]]; do \
+	echo "Waiting for Matrix Synapse deployment to be available..."; \
+	sleep 5; \
+    done
+	
 	@make create_telegram_database
 	@kubectl rollout restart deployment -n ${namespace} ${hookshot_deployment_name}
 	@kubectl rollout restart deployment -n ${namespace} ${telegram_deployment_name}
@@ -209,9 +216,18 @@ create_telegram_database: check_dependencies check_namespace
 	if [ -z "$$POSTGRES_POD" ]; then \
 		echo "❌ Cannot create database. PostgreSQL pod not found. Follow steps in README.md/#mautrix-telegram-database"; \
 	else \
-		kubectl -n $(namespace) exec -it $$POSTGRES_POD -- bash -c 'PGPASSWORD=$(postgresql_admin_password) psql -U $(postgresql_admin_username) --command="CREATE DATABASE $(postgresql_telegram_database_name);"'; \
-		echo "💿 Created database!"; \
+		if kubectl -n $(namespace) exec -it $$POSTGRES_POD -- bash -c 'PGPASSWORD=$(postgresql_admin_password) psql -U $(postgresql_admin_username) --command="CREATE DATABASE $(postgresql_telegram_database_name);"'; then \
+			echo "💿 Created database!"; \
+		else \
+			if [ $$? -eq 1 ]; then \
+				echo "⚠️ Database already exists. Continuing..."; \
+			else \
+				echo "❌ Error creating database"; \
+				exit 1; \
+			fi \
+		fi \
 	fi
+
 
 # make create_telegram_registration_file
 # mautrix-telegram registration file
@@ -239,3 +255,12 @@ install_telegram: check_dependencies check_namespace create_telegram_registratio
 		cp ${telegram_deployment_values_file_path} ./mautrix-telegram/values.yaml &&  \
 		cd ./mautrix-telegram && helm install ${telegram_deployment_name} . --values=values.yaml  -n ${namespace} \
 	)
+
+
+
+
+## ULTIMATE INSTALLATION 
+install_full:
+	@make install_element_web
+	@make install_synapse_blank
+
