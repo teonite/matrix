@@ -11,13 +11,13 @@ spec:
   accessModes:
     - ReadWriteMany
   hostPath:
-    path: /tmp/hostpath-provisioner/matrix/hookshot/e2e # Change matrix to namespace where hookshot is installed 
+    path: /tmp/hostpath-provisioner/openearth/hookshot/e2e # Change openearth to namespace where hookshot is installed 
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name:  hookshot-e2e-keys-claim
-  namespace: matrix  # Change matrix to namespace where hookshot is installed 
+  namespace: openearth  # Change openearth to namespace where hookshot is installed 
 
 spec:
   accessModes:

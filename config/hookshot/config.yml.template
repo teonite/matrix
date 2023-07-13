@@ -5,7 +5,7 @@ bridge:
   # Synapse server url, we gave  local url where
   # http://<deployment_name>.<namespace>.svc.cluster.local:<port>
 
-  url: http://matrix-synapse.matrix.svc.cluster.local:8008
+  url: http://matrix-synapse.openearth.svc.cluster.local:8008
   # Optional. The URL where media hosted on the synapse is reachable
   # (this should be publicly reachable from the internet)
   mediaUrl: https://openearth.space
@@ -154,7 +154,7 @@ queue:
   port: 6379
   # Host must match hookshot redis
   # <deployment_name>.<namespace>.svc.cluster.local
-  host: hookshot-redis-master.matrix.svc.cluster.local
+  host: hookshot-redis-master.openearth.svc.cluster.local
 
 # (Optional) Logging settings. You can have a severity debug,info,warn,error
 logging:

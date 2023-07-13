@@ -4,7 +4,7 @@
 # These configuration variables will be used when executing the makefile commands.
 # ===== 
 
-namespace="matrix" # Set this to your kubernetes deployment name, you want to have everything installed
+namespace="openearth" # Set this to your kubernetes deployment name, you want to have everything installed
 
 # Element-web
 element_deployment_name="element-web" # Element's deployment name

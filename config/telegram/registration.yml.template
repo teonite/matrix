@@ -19,7 +19,7 @@ namespaces:
 # This should match mautrix-telegram's appservice URL 
 # Structure for local cluster looks like this:
 # http://<deployment_name>:<namespace>.svc.cluster.local:<port>
-url: "http://mautrix-telegram.matrix.svc.cluster.local:29317"
+url: "http://mautrix-telegram.openearth.svc.cluster.local:29317"
 
 sender_localpart: telegram
 rate_limited: false

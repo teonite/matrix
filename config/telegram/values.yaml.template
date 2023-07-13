@@ -117,7 +117,7 @@ config:
     # synapse server details
     homeserver:
         #  The address that this appservice can use to connect to the synapse server. ( Change )
-        address: http://matrix-synapse.matrix.svc.cluster.local:8008
+        address: http://matrix-synapse.openearth.svc.cluster.local:8008
         # The domain of the synapse server (for MXIDs, etc).  ( Change )
         domain: openearth.space
         # Whether or not to verify the SSL certificate of the synapse server.
@@ -144,7 +144,7 @@ config:
         # The address that the synapse server can use to connect to this appservice. ( Change )
         # Structure for local cluster looks like this:
         # http://<deployment_name>:<namespace>.svc.cluster.local:<port>
-        address: "http://mautrix-telegram.matrix.svc.cluster.local:29317"
+        address: "http://mautrix-telegram.openearth.svc.cluster.local:29317"
         # When using https:// the TLS certificate and key files for the address.
         tls_cert: false
         tls_key: false
