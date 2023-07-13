@@ -118,11 +118,23 @@ install_synapse_blank: check_dependencies check_namespace create_hookshot_regist
 		cd ./ananace/charts/matrix-synapse/ && helm install ${synapse_deployment_name} . --values=values.yaml -n ${namespace}; \
 	fi
 
-	@kubectl rollout restart deployment ${synapse_deployment_name} -n ${namespace}
-	@while [[ -z $$(kubectl get deployment ${synapse_deployment_name} -n ${namespace} -o jsonpath='{.status.conditions[?(@.type=="Available")].status}') ]]; do \
-	echo "Waiting for Matrix Synapse deployment to be available..."; \
-	sleep 5; \
-    done
+	@kubectl rollout restart deployment $(synapse_deployment_name) -n $(namespace)
+	@echo "😴 Waiting for Synapse to start"
+	@success_count=0; \
+	while true; do \
+		status=$$(kubectl get deployment $(synapse_deployment_name) -n $(namespace) -o jsonpath='{.status.conditions[?(@.type=="Available")].status}'); \
+		if [[ "$$status" == "True" ]]; then \
+			((success_count++)); \
+			if ((success_count >= 3)); then \
+				echo "😁 Synapse is available"; \
+				break; \
+			fi; \
+		else \
+			success_count=0; \
+		fi; \
+		sleep 5; \
+	done
+	
 	
 	@make create_telegram_database
 	@kubectl rollout restart deployment -n ${namespace} ${hookshot_deployment_name}
