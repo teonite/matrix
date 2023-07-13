@@ -98,7 +98,7 @@ Follow the steps below to get started:
 
 2. Configure the files inside the `config/` directory.
 
-   > **NOTE:** In the files provided in the `config/` directory, make sure to replace all instances of the `openearth.space` domain with your specific requirements.
+   > **NOTE:** In the files provided in the `config/` directory, make sure to replace all instances of the `openearth.space` domain with your domain name.
 
 3. After configuring the files, if you want a full setup, execute the following command:
 
@@ -280,50 +280,19 @@ Keep in mind that telegram need some time to start responding or joining rooms
 
 ## Updating running matrix-hookshot settings
 
-Automatization for this part come soon, for now you can follow :
+   Updating already running matrix-hookshot settings is straight forward:
 
-<details>
-   <summary>Manual installation</summary>
-
-If you already have hookshot working fine on kubernetes and want to updated config, registration file, passkey or githubKey, follow these steps:
-
-1. Create an empty folder to store the extracted files.
-
-2. In created folder retrieve the hookshot config map using the following command:
-
-   ```bash
-   kubectl get configmap hookshot-config -o json > hookshot-config.json
-   ```
-
-   > Where `hookshot-config` is config map used by hookshot
-
-3. Separate the contents of the config map into matching files by executing the following script:
-
-   ```bash
-   cat hookshot-config.json | jq -r '.data | keys[]' | while read -r key; do
-   cat hookshot-config.json | jq -r --arg key "$key" '.data[$key]' > "./$key"
-   done
-   ```
-
-4. Edit files as you want
-
-5. To updated config map run:
-   ```bash
-   kubectl create configmap hookshot-config --from-file=config.yml --from-file=registration.yml --from-file=passkey.pem --from-file=githubKey.pem -o yaml --dry-run=client | kubectl replace -f -
-   ```
-   > Delete `--from-file=githubKey.pem` if you haven't enabled github in config file.
-6. Rerun hookshot's deployment, by using the following command:
-
-   ```bash
-   kubectl rollout restart deployment matrix-hookshot
-   ```
-
-   </details>
+   1. Execute `make pull_hookshot_config`
+   2. Edit files inside `/temp/` directory
+   3. Execute `make update_hookshot_config`
 
 <br>
+
+<hr>
 
 <p align="center">
    <a href="https://github.com/teonite/matrix/issues/new">Request Feature</a>
    ·
    <a href="https://github.com/teonite/matrix/issues/new">Report Bug</a>
 </p>
+<hr>

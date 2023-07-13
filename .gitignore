@@ -2,3 +2,4 @@
 *.pem
 *.yml
 *.yaml
+**/temp/**

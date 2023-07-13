@@ -181,7 +181,7 @@ update_hookshot_deployment: check_dependencies check_namespace
 		awk '/volumeMounts:/ { print; print "        - mountPath: /data/e2e\n          name: e2e-keys"; next }1' | \
 		kubectl apply -f - --force
 	@echo "✨Deployment updated\n"
-	
+
 # Create volumes for hookshot e2e keys
 create_hookshot_volumes: check_dependencies check_namespace
 	@test -f ${hookshot_volumes_file_path} || (echo "❌ File '${hookshot_volumes_file_path}' does not exist."; exit 1); \
@@ -206,6 +206,29 @@ install_hookshot: check_dependencies check_namespace create_hookshot_ingress cre
 	)
 	@make update_hookshot_deployment
 	@kubectl rollout restart deployment -n ${namespace} ${hookshot_deployment_name}
+
+
+# pull hookshot config
+pull_hookshot_config:
+	@mkdir -p ./temp
+	@kubectl get configmap ${hookshot_config_file_name} -n ${namespace} -o json > ./temp/temp.json
+	@cat ./temp/temp.json | jq -r '.data | keys[]' | while read -r key; do \
+		cat ./temp/temp.json | jq -r --arg key "$$key" '.data[$$key]' > "./temp/$$key"; \
+	done
+	@rm ./temp/temp.json
+	@echo "😁 Now edit hookshot's config file inside temp/ folder. After this run make update_hookshot_config"
+
+# Push updated config
+update_hookshot_config:
+	@if [ -f ./temp/githubKey.pem ]; then \
+		kubectl create configmap ${hookshot_config_file_name} -n ${namespace} --from-file=./temp/config.yml  \
+		--from-file=./temp/registration.yml --from-file=./temp/passkey.pem --from-file=./temp/githubKey.pem | kubectl replace -f -;  \
+	else \
+		kubectl create configmap ${hookshot_config_file_name} -n ${namespace} --from-file=./temp/config.yml \
+		--from-file=./temp/registration.yml | kubectl replace -f -;  \
+	fi
+	@kubectl rollout restart deployment ${hookshot_deployment_name} -n ${namespace}
+	@echo "🚀 Updated hookshot config"
 
 
 # ===================
