@@ -31,7 +31,7 @@
       <a href="https://github.com/teonite/matrix/issues/new">Request Feature</a>
       ·
       <a href="https://github.com/teonite/matrix/issues/new">Report Bug</a>
-   </p> 
+   </p>
 
 </div>
 
@@ -66,11 +66,7 @@
   </ol>
 </details>
 
-<br>
-
-
-## About the repository 
-<hr>
+## About the repository
 
 The purpose of this repository is to provide an **easy** way to **automate** the launch process using a combination of [element-web](https://github.com/vector-im/element-web), [synapse server](https://github.com/matrix-org/synapse), [matrix-hookshot](https://github.com/matrix-org/matrix-hookshot) and [mautrix-telegram](https://github.com/mautrix/telegram). This project was designed specifically to meet the needs of the [OpenEarth.Space](https://openearth.space) project.
 
@@ -80,24 +76,19 @@ Using this repository, users can effortlessly configure and set up the necessary
 
 <br>
 
-
 ## Prerequisites
-<hr>
 
 Before integrating, ensure you have the following prerequisites:
 
 - **Kubernetes**: Install and configure Kubernetes using `kubectl`. Refer to the [official Kubernetes documentation](https://kubernetes.io/docs/setup/) for instructions.
 
-- **kubectl**: Install kubectl, the command-line tool for Kubernetes clusters. Refer to the [official kubectl documentation](https://kubernetes.io/docs/tasks/tools/#kubectl) for instructions. 
-
+- **kubectl**: Install kubectl, the command-line tool for Kubernetes clusters. Refer to the [official kubectl documentation](https://kubernetes.io/docs/tasks/tools/#kubectl) for instructions.
 
 - **Helm**: Install Helm for managing applications on Kubernetes clusters. Refer to the [official Helm documentation](https://helm.sh/docs/intro/install/) for instructions.
 
 <br>
 
 ## Getting Started
-
-<hr>
 
 To begin, you don't necessarily need to modify any variables inside the `config/config.sh` file, but in most cases, it is recommended to consider changing the namespace.
 
@@ -114,21 +105,21 @@ Follow the steps below to get started:
    ```bash
    make install_full
    ```
-   This command will install element-web, the synapse server, and all appservices. 
+
+   This command will install element-web, the synapse server, and all appservices.
 
 <br>
 
 If you want to install appservices to an existing Synapse server, only install Element Web, or solely install the Synapse server without Element Web, please refer to the appropriate sections below:
-   - [element-web](#installing-element-web-separately)
-   - [synapse](#synapse-installation)
-   - [matrix-hookshot](#installing-matrix-hookshot-on-already-running-synapse-server)
-   - [mautrix-telegram](#installing-mautrix-telegram-on-already-running-synapse-server)
+
+- [element-web](#installing-element-web-separately)
+- [synapse](#synapse-installation)
+- [matrix-hookshot](#installing-matrix-hookshots)
+- [mautrix-telegram](#installing-mautrix-telegram)
 
 <br>
 
-##  Installing element-web separately
-
-<hr>
+## Installing element-web separately
 
 Installing Element Web separately is a straightforward process. Follow the steps below:
 
@@ -141,13 +132,12 @@ Installing Element Web separately is a straightforward process. Follow the steps
    ```bash
    make install_element_web
    ```
+
    This command will initiate the installation of Element Web.
 
 <br>
 
 ## Synapse Installation
-
-<hr>
 
 To operate a federating Matrix server, you must have a publicly accessible subdomain with a Kubernetes ingress (which will be automatically created). If you intend to utilize a well-known entry, you must obtain a valid certificate for the desired subdomain to serve Synapse. Furthermore, if you opt for an SRV record, you will need a valid certificate for the main domain used for your MXIDs.
 
@@ -158,6 +148,7 @@ To start install synapse server with appservices from scratch, follow these step
 1. Run the `make init` command to generate the necessary configuration files.
 
 2. Edit the following files:
+
    - `/config/synapse.yaml`
    - `/config/hookshot/`
    - `/config/telegram/`
@@ -167,16 +158,14 @@ To start install synapse server with appservices from scratch, follow these step
    ```bash
    make install_synapse_blank
    ```
-This command will install Synapse along with all the configured appservices.
 
-> _**NOTE:**_  Additional configuration and setup may be required based on your specific requirements.
+   This command will install Synapse along with all the configured appservices.
+
+> _**NOTE:**_ Additional configuration and setup may be required based on your specific requirements.
 
 <br>
 
-
-
 ## Updating an already existing synapse server with new appservices
-<hr>
 
 Automatization for this part come soon, for now you can follow :
 
@@ -184,68 +173,69 @@ Automatization for this part come soon, for now you can follow :
    <summary>Manual updating</summary>
    Before proceeding with the Synapse update, please ensure that you have already created the hookshot registration by running :  `make check_hookshot_registration_file`
 
-   To update an already running Synapse server in Kubernetes, follow these steps:
+To update an already running Synapse server in Kubernetes, follow these steps:
 
-   1. Retrieve the current `configmap` and `deployment` file from the running Synapse deployment in Kubernetes:
+1.  Retrieve the current `configmap` and `deployment` file from the running Synapse deployment in Kubernetes:
 
-      ```bash
-         kubectl get configmap matrix-synapse -n default -o yaml > configMap.yaml
-         kubectl get deployment  matrix-synapse  -n default  -o yaml > deployment.yaml
-      ```
-      > Change default to match namespace where synapse server is.
-      > Change 1st matrix-synapse to match your configmap for synapse server and 2nd matrix-synapse to synapse server deployment name.
+    ```bash
+       kubectl get configmap matrix-synapse -n default -o yaml > configMap.yaml
+       kubectl get deployment  matrix-synapse  -n default  -o yaml > deployment.yaml
+    ```
 
-   2. Open the `configMap.yaml` file and add the following lines in homeserver.yaml:
+    > Change default to match namespace where synapse server is.
+    > Change 1st matrix-synapse to match your configmap for synapse server and 2nd matrix-synapse to synapse server deployment name.
 
-      ```yaml
-      app_service_config_files:
+2.  Open the `configMap.yaml` file and add the following lines in homeserver.yaml:
+
+    ```yaml
+    app_service_config_files:
       - /synapse/config/hookshot/registration.yml
-      - /synapse/config/telegram/registration.yml   
-      ```
+      - /synapse/config/telegram/registration.yml
+    ```
 
-   3. Open `deployment.yaml`
-      Find `volumes` value and add:
+3.  Open `deployment.yaml`
+    Find `volumes` value and add:
 
-      ```yaml
-         - configMap:
-            defaultMode: 420
-            name: registration-hookshot
-         name: hookshot
-         - configMap:
-            defaultMode: 420
-            name: registration-telegram
-         name: telegram
-      ```
+    ```yaml
+       - configMap:
+          defaultMode: 420
+          name: registration-hookshot
+       name: hookshot
+       - configMap:
+          defaultMode: 420
+          name: registration-telegram
+       name: telegram
+    ```
 
-      Find `volumeMounts` value and add:
+    Find `volumeMounts` value and add:
 
-      ```yaml
-         - mountPath: /synapse/config/hookshot
-            name: hookshot
-         - mountPath: /synapse/config/telegram
-            name: telegram
-      ```
+    ```yaml
+       - mountPath: /synapse/config/hookshot
+          name: hookshot
+       - mountPath: /synapse/config/telegram
+          name: telegram
+    ```
 
-      Remember to not cause any syntax errors
+    Remember to not cause any syntax errors
 
-   4. Apply updated files to the Kubernetes cluster by running:
-      ```bash
-         kubectl apply -f configMap.yaml --force
-         kubectl apply -f deployment.yaml --force
-      ```
-   5. Verify the status of the update by checking the rollout status of the deployment:
+4.  Apply updated files to the Kubernetes cluster by running:
+    ```bash
+       kubectl apply -f configMap.yaml --force
+       kubectl apply -f deployment.yaml --force
+    ```
+5.  Verify the status of the update by checking the rollout status of the deployment:
 
-      ```bash
-      kubectl rollout restart deployment matrix-synapse -n default
-      ```
-      > Change default to match namespace where synapse server is.
+    ```bash
+    kubectl rollout restart deployment matrix-synapse -n default
+    ```
 
-   Please ensure that you have the necessary access and permissions to perform the update process.
+    > Change default to match namespace where synapse server is.
+
+Please ensure that you have the necessary access and permissions to perform the update process.
+
 </details>
 
 ## Installing matrix-hookshots
-
-<hr>
 
 Automatization for this part come soon, for now you can follow :
 
@@ -269,36 +259,28 @@ Keep in mind that hookshot need some time to start responding or joining rooms
 
 ## Installing mautrix-telegram
 
-<hr>
-
 Automatization for this part come soon, for now you can follow :
-
 
 <details>
    <summary>Manual installation</summary>
    1. Open `config/telegram` folder and edit files inside as needed.
 
-   2. Execute:
-      ```
-      make install_telegram
-      ```
+2.  Execute:
+    ```
+    make install_telegram
+    ```
 
-   Keep in mind that telegram need some time to start responding or joining rooms
+Keep in mind that telegram need some time to start responding or joining rooms
 
-   > For more detailed setup instructions, refer to the [official guide](https://docs.mau.fi/bridges/python/telegram/index.html).
-
+> For more detailed setup instructions, refer to the [official guide](https://docs.mau.fi/bridges/python/telegram/index.html).
 
 </details>
 
-
 <br>
 
-## Updating running matrix-hookshot settings 
-
-<hr>
+## Updating running matrix-hookshot settings
 
 Automatization for this part come soon, for now you can follow :
-
 
 <details>
    <summary>Manual installation</summary>
@@ -312,7 +294,9 @@ If you already have hookshot working fine on kubernetes and want to updated conf
    ```bash
    kubectl get configmap hookshot-config -o json > hookshot-config.json
    ```
+
    > Where `hookshot-config` is config map used by hookshot
+
 3. Separate the contents of the config map into matching files by executing the following script:
 
    ```bash
@@ -333,15 +317,13 @@ If you already have hookshot working fine on kubernetes and want to updated conf
    ```bash
    kubectl rollout restart deployment matrix-hookshot
    ```
-</details>
+
+   </details>
 
 <br>
 
-<hr>
-   <p align="center">
-      <a href="https://github.com/teonite/matrix/issues/new">Request Feature</a>
-      ·
-      <a href="https://github.com/teonite/matrix/issues/new">Report Bug</a>
-   </p>
-<hr>
-
+<p align="center">
+   <a href="https://github.com/teonite/matrix/issues/new">Request Feature</a>
+   ·
+   <a href="https://github.com/teonite/matrix/issues/new">Report Bug</a>
+</p>
