@@ -13,7 +13,6 @@ help:
 	@printf "\nE L E M E N T - W E B \n"
 	@printf "If you have already run ${BLUE}make init${CE}, please configure the element-web.yaml file in the config/ folder.\n"
 	@printf "After configuration, run the command ${BLUE}make install_element_web${CE} to install element-web.\n\n"
-	@printf "You have the option to add TLS to your element installation by configuring tls-secret.yaml inside the config/ folder \nand running ${BLUE}make tls_update${CE}.However, this step is not required.\n"
 	
 	@printf "\nS Y N A P S E \n"
 	@printf "After configuring files inside the config folder, run ${BLUE}make install_synapse_blank${CE} for Synapse installation with Hookshot and Mautrix-Telegram.\n"
@@ -90,14 +89,6 @@ install_element_web: check_dependencies check_namespace
 		cp ${element_web_values_path} ./ananace/charts/element-web/values.yaml && \
 		cd ./ananace/charts/element-web &&  helm install ${element_deployment_name} . --values=values.yaml -n ${namespace} \
 	)
-
-# make tls_update
-# Updates tls for element-web
-tls_update: check_dependencies check_namespace
-	kubectl apply -f ${element_web_tls_file_path} -n ${namespace}
-	cp ${element_web_values_path} ./ananace/charts/element-web/values.yaml
-	cd ./ananace/charts/element-web && helm upgrade ${element_deployment_name} . --values=values.yaml  -n ${namespace}
-
 
 # ===================
 # Synapse
