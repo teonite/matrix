@@ -21,15 +21,15 @@ help:
 
 	@printf "\nH O O K S H O T \n"
 	@printf "After configuring files inside the config/hookshot folder, run ${BLUE}make install_hookshot${CE} for Hookshot installation.\n"
-	@printf "You can also check if the Hookshot registration file already exists by running: ${BLUE}make check_hookshot_registration_file${CE}\n"
 # add update
 
 	@printf "\nM A U T R I X - T E L E G R A M \n"
-	@printf "mautrix-telegram need database in order to work proparly, run ${BLUE}create_telegram_database${CE} in order to create database.\n"
 	@printf "After configuring files inside the config/telegram folder, run ${BLUE}make install_telegram${CE} for mautrix-telegram installation.\n"
-	@printf "You can also check if the mautrix-telegram registration file already exists by running: ${BLUE}make check_telegram_registration_file${CE}\n"
-	@printf "\n"
 # add update
+
+	@printf "\nF U L L \n"
+	@printf "If you want to install everything in the fastest way, run ${BLUE}make init${CE}, configure files inside config folder and then execute ${BLUE}make install_full${CE}\n"
+	@printf "\n"
 
 
 # ===================
