@@ -2,8 +2,10 @@
 bridge:
   # Synapse server name
   domain: openearth.space
-  # Synapse server url
-  url: https://openearth.space:8008
+  # Synapse server url, we gave  local url where
+  # http://<deployment_name>.<namespace>.svc.cluster.local:<port>
+
+  url: http://matrix-synapse.openearth.svc.cluster.local:8008
   # Optional. The URL where media hosted on the synapse is reachable
   # (this should be publicly reachable from the internet)
   mediaUrl: https://openearth.space
@@ -31,7 +33,7 @@ github:
   oauth:
     client_id: <client-id>
     client_secret: <client-secret>
-    redirect_uri: https://openearth.space/hookshot/webhook/oauth # Must be the oauth hookshot's webhook URL
+    redirect_uri: https://hookshot.openearth.space/oauth # Must be the oauth hookshot's webhook URL
   # (Optional) Default options for GitHub connections.
   defaultOptions:
     showIssueRoomLink: false
@@ -48,14 +50,14 @@ gitlab:
       url: https://gitlab.com
   webhook:
     secret: secrettoken # This secrettoken must match gitlab's webhook secret, refer to documentation
-    publicUrl: https://openearth.space/hookshot/webhook/ # Must be the URL where GitLab webhook events are received (i.e. the path to / for your webhooks listener).
+    publicUrl: https://hookshot.openearth.space/ # Must be the URL where GitLab webhook events are received (i.e. the path to / for your webhooks listener).
   # (Optional) Prefix used when creating ghost users for GitLab accounts.
   userIdPrefix: _gitlab_
 
 # (Optional) Configure this to enable Figma support
 # Ref: https://matrix-org.github.io/matrix-hookshot/latest/setup/figma.html
 figma:
-  publicUrl: https://openearth.space/hookshot/webhook/ # Must be the URL where Figma webhook events are received (i.e. the path to / for your webhooks listener).
+  publicUrl: https://hookshot.openearth.space/ # Must be the URL where Figma webhook events are received (i.e. the path to / for your webhooks listener).
   instances:
     your-instance:
       teamId: <your-team-id>
@@ -72,14 +74,14 @@ jira:
   oauth:
     client_id: <client_id>
     client_secret: <client_secret>
-    redirect_uri: https://openearth.space/hookshot/webhook/jira/oauth # Must be the oauth hookshot's webhook URL
+    redirect_uri: https://hookshot.openearth.space/jira/oauth # Must be the oauth hookshot's webhook URL
 
 # (Optional) Support for generic webhook events.
 # Ref: https://matrix-org.github.io/matrix-hookshot/latest/setup/webhooks.html
 generic:
   enabled: false
   enableHttpGet: false
-  urlPrefix: https://openearth.space/hookshot/webhook/ # Must be the URL where hookshot webhook events are received (i.e. the path to / for your webhooks listener).
+  urlPrefix: https://hookshot.openearth.space/ # Must be the URL where hookshot webhook events are received (i.e. the path to / for your webhooks listener).
   userIdPrefix: _webhooks_ #  Prefix used when creating ghost users for webhooks accounts.
   allowJsTransformationFunctions: false
   waitForComplete: false
@@ -111,13 +113,32 @@ bot:
 # (Optional) Define additional bot users for specific services
 # Ref: https://matrix-org.github.io/matrix-hookshot/latest/advanced/service_bots.html
 serviceBots:
-  []
-  # - localpart: feeds
-  #   displayname: Feeds
-  #   avatar: mxc://half-shot.uk/2876e89ccade4cb615e210c458e2a7a6883fe17d
-  #   prefix: "!feeds"
-  #   service: feeds
-
+  - localpart: _gitlab_
+    displayname: Gitlab
+    avatar: mxc://matrix.org/VcHetqlhJgSUCSvnaGzabRBv
+    prefix: "!gitlab"
+    service: gitlab
+  - localpart: _github_
+    displayname: Github
+    avatar: mxc://matrix.org/jDHuRxOuiYZNNEwEnMWNuaEz
+    prefix: "!github"
+    service: github
+  - localpart: _figma_
+    displayname: Figma
+    avatar: mxc://matrix.org/auIthwqXJiNnVNpFOkmBSUmo
+    prefix: "!figma"
+    service: figma
+  - localpart: _jira_
+    displayname: Jira
+    avatar: mxc://matrix.org/vgRDeeWtQYWtnOWGdXChCwkH
+    prefix: "!jira"
+    service: jira
+  - localpart: _webhooks_
+    displayname: Webhook
+    avatar: mxc://matrix.org/pViKWRAKFmNWUGBewQCNPkZU
+    prefix: "!webhook"
+    service: generic
+        
 # (Optional) Prometheus metrics support
 # I recommend deleting this part
 # Ref: https://matrix-org.github.io/matrix-hookshot/latest/metrics.html
@@ -131,7 +152,9 @@ metrics:
 queue:
   monolithic: true
   port: 6379
-  host: localhost
+  # Host must match hookshot redis
+  # <deployment_name>.<namespace>.svc.cluster.local
+  host: hookshot-redis-master.openearth.svc.cluster.local
 
 # (Optional) Logging settings. You can have a severity debug,info,warn,error
 logging:
@@ -184,7 +207,7 @@ permissions:
     services:
       - service: "*"
         level: admin
-  - actor: "@josh.openearth.space" # Josh user at openearth.space will have admin access to hookshot
+  - actor: "@josh:openearth.space" # Josh user at openearth.space will have admin access to hookshot
     services:
       - service: "*"
         level: admin
@@ -212,3 +235,7 @@ listeners:
     bindAddress: 0.0.0.0
     resources:
       - widgets
+      
+# EXPERIMENTAL e2e encyrption
+experimentalEncryption:
+  storagePath: /data/e2e # This is path where hookshot volumes will be mounted

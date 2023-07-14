@@ -1,0 +1,31 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: hookshot-e2e-keys
+  labels:
+    name:  hookshot-e2e-keys
+spec:
+  capacity:
+    storage: 20Mi
+  storageClassName: standard
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: /tmp/hostpath-provisioner/openearth/hookshot/e2e # Change openearth to namespace where hookshot is installed 
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name:  hookshot-e2e-keys-claim
+  namespace: openearth  # Change openearth to namespace where hookshot is installed 
+
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Mi 
+  selector:
+    matchLabels:
+      name:  hookshot-e2e-keys
+      

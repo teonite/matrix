@@ -5,13 +5,13 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: hookshot-ingress # Ingress name 
-  namespace: default # Must match hookshot namespace defined in `config.sh` 
+  namespace: openearth # Must match hookshot namespace defined in `config.sh` 
 spec:
   rules:
-    - host: openearth.space # Host url 
+    - host: hookshot.openearth.space # Host url 
       http:
         paths:
-          - path: /hookshot/webhook # Path that hookshot's webhooks will use 
+          - path: / # Path that hookshot's webhooks will use 
             pathType: Prefix
             backend:
               service:

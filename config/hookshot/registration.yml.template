@@ -21,6 +21,8 @@ namespaces:
       exclusive: true
     - regex: "@_webhooks_.*:openearth.space"
       exclusive: true
+    - regex: "@_figma_.*:openearth.space"
+      exclusive: true
     - regex: "@feeds:openearth.space"
       exclusive: true
   aliases:
@@ -32,7 +34,7 @@ sender_localpart: hookshot
 # This should match hookshot's appservice URL 
 # Structure for local cluster looks like this:
 # http://<deployment_name>:<namespace>.svc.cluster.local:<port>
-url: "http://matrix-hookshot.matrix.svc.cluster.local:9002"
+url: "http://matrix-hookshot.openearth.svc.cluster.local:9002"
 rate_limited: false
 
 # [EXPERIMENTAL] If enabling encryption

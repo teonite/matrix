@@ -1,3 +1,8 @@
+# In this file, you must make at least two changes:
+# modify the values inside the "telegram" field and the "shared_secret" in the provisioning section,
+# and then paste the configured registration file into the registration values.
+
+
 # Default values for mautrix-telegram.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
@@ -66,7 +71,7 @@ probes:
     periodSeconds: 10
 
 ingress:
-  enabled: true
+  enabled: false
   ## ingress.ingressClassName -- Support for ingress class name that was introduced in kubernetes 1.19
   ingressClassName:
   annotations: {}
@@ -112,7 +117,7 @@ config:
     # synapse server details
     homeserver:
         #  The address that this appservice can use to connect to the synapse server. ( Change )
-        address: https://openearth.space:8008
+        address: http://matrix-synapse.openearth.svc.cluster.local:8008
         # The domain of the synapse server (for MXIDs, etc).  ( Change )
         domain: openearth.space
         # Whether or not to verify the SSL certificate of the synapse server.
@@ -139,7 +144,7 @@ config:
         # The address that the synapse server can use to connect to this appservice. ( Change )
         # Structure for local cluster looks like this:
         # http://<deployment_name>:<namespace>.svc.cluster.local:<port>
-        address: "http://mautrix-telegram.matrix.svc.cluster.local:29317"
+        address: "http://mautrix-telegram.openearth.svc.cluster.local:29317"
         # When using https:// the TLS certificate and key files for the address.
         tls_cert: false
         tls_key: false
@@ -185,7 +190,7 @@ config:
             prefix: /_matrix/provision
             # The shared secret to authorize users of the API.
             # ( Change ) Cen be random sting but should be save
-            shared_secret: XtZ5g7dWHwD4gUYMeLuS5WBRLDNHNYGGctWbrM26MYpQ2GmVC5mvFJmf0kRiRi0o
+            shared_secret: <shared_secret>
 
         # The unique ID of this appservice. Must match id given in registration.yaml
         id: telegram
@@ -375,14 +380,14 @@ config:
         # See https://docs.mau.fi/bridges/general/end-to-bridge-encryption.html for more info.
         encryption:
             # Allow encryption, work in group chat rooms with e2ee enabled
-            allow: false
+            allow: true
             # Default to encryption, force-enable encryption in all portals the bridge creates
             # This will cause the bridge bot to be in private chats for the encryption to work properly.
-            default: false
+            default: true
             # Whether to use MSC2409/MSC3202 instead of /sync long polling for receiving encryption-related data.
             appservice: false
             # Require encryption, drop any unencrypted messages.
-            require: false
+            require: true
             # Enable key sharing? If enabled, key requests for rooms where users are in will be fulfilled.
             # You must use a client that supports requesting keys from other users to use this feature.
             allow_key_sharing: false

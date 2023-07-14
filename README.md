@@ -12,15 +12,18 @@ Before proceeding with the integration, ensure you have the following prerequisi
 
 <hr />
 
-## Note
+## Important
+
+Start installation process with `make init` command, then continue with all other installations.
 
 Please customize the default domain in this guide, `openearth.space`, to match your specific requirements.
 
-Remember, appservices will **not** work properly in end-to-end encrypted rooms.
+Remember, appservices may **not** work properly in end-to-end encrypted rooms because.
 
 You can specify namespaces and other values in `config/config.sh`.
 
 ## Table of Contents
+- [Important](#important)
 - [Element installation](#element-installation)
   - [Element TLS setup](#element-tls-setup)
 - [Synapse installation](#synapse-installation)
@@ -31,7 +34,11 @@ You can specify namespaces and other values in `config/config.sh`.
   - [Update existing hookshot](#update-hootshots-config-on-kubernetes)
 - [mautrix-telegram](#mautrix-telegram)
    - [Basic installation](#basic-mautrix-telegram-installation)
- 
+- [Full installation](#full-installation)
+<hr />
+
+
+
 <hr />
 
 ## Element Installation
@@ -60,61 +67,48 @@ In order to add tls to your **element web** you have to follow theses steps:
 
 3.  Execute:
 
-   ```
-   make tls_update
-   ```
+      ```
+      make tls_update
+      ```
 
 <hr />
 
 ## Synapse Installation
 
 To run a federating Matrix server, you need to have a publicly accessible subdomain that Kubernetes has an ingress on.
-You will also require some federation guides, either in the form of a .well-known/matrix/server server or as an SRV record in DNS.
+You will also require some federation guides, either in the form of a **.well-known/matrix/server** server or as an SRV record in DNS.
 When using a well-known entry, you will need to have a valid cert for whatever subdomain you wish to serve Synapse on.
 When using an SRV record, you will additionally need a valid cert for the main domain that you're using for your MXIDs.
 
-### Blank installation with all appservices
+### Blank Installation with All Appservices
 
 To integrate appservices to [matrix-org/synapse](https://github.com/matrix-org/synapse) from scratch, follow these steps:
 
-1. Edit `/config/synapse.yaml` as you want, but make sure to leave the following configurations:
+1. Edit the following files:
+   - `/config/synapse.yaml`
+   - `/config/hookshot/`
+   - `/config/telegram/`
 
-   ```yaml
-   extraConfig:
-   app_service_config_files:
-      - /synapse/config/hookshot/registration.yml
-      - /synapse/config/telegram/registration.yml    
-   ```
-
-   and
-
-   ```yaml
-   extraVolumes:
-      - name: hookshot 
-         configMap:
-         name: registration-hookshot
-      - name: telegram 
-         configMap:
-         name: registration-telegram
-   extraVolumeMounts:
-      - name: hookshot
-         mountPath: /synapse/config/hookshot
-      - name: telegram
-         mountPath: /synapse/config/telegram
-   ```
-
-2. Execute:
+2. Execute the following command:
 
    ```
    make install_synapse_blank
    ```
-   Please ensure that you have the necessary access and permissions to perform the installation process.
 
-   Keep in mind synapse server initialization make take some time.
+
+   This command will install synapse with all configured appservices, such as hookshot and mautrix-telegram.
+
+   > Please ensure that you have the necessary access and permissions to perform the installation process.
+
+   Keep in mind that the synapse server initialization may take some time.
 
 <hr />
 
 ### Adding appservices to already existing synapse 
+
+```diff
+-  This section is outdated, automatization coming soon -
+```
 
 > Before proceeding with the Synapse update, please ensure that you have already created the hookshot registration by running :  `make check_hookshot_registration_file`
 
@@ -177,6 +171,9 @@ To update an already running Synapse server in Kubernetes, follow these steps:
 Please ensure that you have the necessary access and permissions to perform the update process.
 
 ### Adding mautrix-telegram to already existing synapse
+```diff
+-  This section is outdated, automatization coming soon -
+```
 > Before proceeding with the Synapse update, please ensure that you have already created the mautrix-telegram registration by running :  `make check_telegram_registration_file`
 
 To update an already running Synapse server in Kubernetes, follow these steps:
@@ -298,3 +295,11 @@ If you already have hookshot working fine on kubernetes and want to updated conf
 Keep in mind that telegram need some time to start responding or joining rooms
 
 > For more detailed setup instructions, refer to the [official guide](https://docs.mau.fi/bridges/python/telegram/index.html).
+
+
+## Full installation
+
+   If you want to install **element-web** and **syanpse** with all appservices run:
+   ```
+   make install_full
+   ```
