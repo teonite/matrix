@@ -174,47 +174,49 @@ To start install synapse server with appservices from scratch, follow these step
    2. Access the dashboard and locate the Synapse server config map. In the `homeserver.yaml` value, incorporate the following lines:
 
 
-   ```yaml
-      app_service_config_files:
-         - /synapse/config/hookshot/registration.yml
-         - /synapse/config/telegram/registration.yml
-   ```
+      ```yaml
+         app_service_config_files:
+            - /synapse/config/hookshot/registration.yml
+            - /synapse/config/telegram/registration.yml
+      ```
 
-   If you desire your app services to function in end-to-end encrypted rooms, include the subsequent lines:   
-   
-   ```yaml
-      experimental_features:
-         msc2409_to_device_messages_enabled: true
-         msc3202_device_masquerading: true
-         msc3202_transaction_extensions: true
-   ```
+      If you desire your app services to function in end-to-end encrypted rooms, include the subsequent lines:   
+      
+      ```yaml
+         experimental_features:
+            msc2409_to_device_messages_enabled: true
+            msc3202_device_masquerading: true
+            msc3202_transaction_extensions: true
+      ```
 
 
    2. Open the Synapse server deployment file within the dashboard. Locate the `volumes` section and append:
 
-   ```yaml
-       - configMap:
-          defaultMode: 420
-          name: registration-hookshot
-       name: hookshot
-       - configMap:
-          defaultMode: 420
-          name: registration-telegram
-       name: telegram
-   ```
+      ```yaml
+         - configMap:
+            defaultMode: 420
+            name: registration-hookshot
+         name: hookshot
+         - configMap:
+            defaultMode: 420
+            name: registration-telegram
+         name: telegram
+      ```
 
-    Find the `volumeMounts` section and include:
+      Find the `volumeMounts` section and include:
 
-   ```yaml
-       - mountPath: /synapse/config/hookshot
-          name: hookshot
-       - mountPath: /synapse/config/telegram
-          name: telegram
-   ```
+      ```yaml
+         - mountPath: /synapse/config/hookshot
+            name: hookshot
+         - mountPath: /synapse/config/telegram
+            name: telegram
+      ```
 
    Ensure that no syntax errors are introduced.
 
    3. Execute  `make update_synapse_server`.
+
+<br>
 
 ## Installing matrix-hookshots
 
