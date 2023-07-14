@@ -134,7 +134,27 @@ extraConfig:
     msc3202_transaction_extensions: true
     msc2409_to_device_messages_enabled: true
 
-  #  old_signing_keys:
+  # Defguard auth section
+  oidc_providers:
+    - authorization_endpoint: https://id.openearth.space/api/v1/oauth/authorize # Change to your defguard authorization endpoint
+      client_id: <client_id> # Change to your defguard application client_id
+      client_secret: <client_secret> # Change to your defguard application cient_secret
+      discover: false
+      idp_id: Defguard
+      idp_name: Defguard
+      issuer: https://id.openearth.space/   # Change to your defguard issuer
+      jwks_uri: https://id.openearth.space/api/v1/oauth/discovery/keys  # Change to your jwks uri
+      scopes: [openid, profile, email]
+      token_endpoint: https://id.openearth.space/api/v1/oauth/token # Change to your token endpoint
+      user_mapping_provider:
+        config:
+          display_name_template: "{{ user.first_name }} {{ user.last_name }}"
+          email_template: "{{ user.email }}"
+          localpart_template: "{{ user.email.split('@')[0] }}"
+      userinfo_endpoint: https://id.openearth.space/api/v1/oauth/userinfo  # Change to your userinfo endpoint
+
+
+#  old_signing_keys:
 #    "ed25519:id": { key: "base64string", expired_ts: 123456789123 } 
 #  use_presence: false
 #  enable_search: false
