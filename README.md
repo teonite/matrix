@@ -90,7 +90,7 @@ Before integrating, ensure you have the following prerequisites:
 
 ## Getting Started
 
-To begin, you don't necessarily need to modify any variables inside the `config/config.sh` file, but in most cases, it is recommended to consider changing the namespace.
+To begin, you don`t necessarily need to modify any variables inside the `config/config.sh` file, but in most cases, it is recommended to consider changing the namespace.
 
 Follow the steps below to get started:
 
@@ -167,36 +167,32 @@ To start install synapse server with appservices from scratch, follow these step
 
 ## Updating an already existing synapse server with new appservices
 
-Automatization for this part come soon, for now you can follow :
+   To update an existing Synapse server with new app services, you need to add the following lines to your Matrix-Synapse config map.
 
-<details>
-   <summary>Manual updating</summary>
-   Before proceeding with the Synapse update, please ensure that you have already created the hookshot registration by running :  `make check_hookshot_registration_file`
+   1. Begin by running `make init`. Modify the files within the `/config/` directory, excluding `element-web.yaml` and `synapse.yaml`. Remember to adjust the values in `config.sh` to match your Kubernetes setup.
 
-To update an already running Synapse server in Kubernetes, follow these steps:
+   2. Access the dashboard and locate the Synapse server config map. In the `homeserver.yaml` value, incorporate the following lines:
 
-1.  Retrieve the current `configmap` and `deployment` file from the running Synapse deployment in Kubernetes:
 
-    ```bash
-       kubectl get configmap matrix-synapse -n default -o yaml > configMap.yaml
-       kubectl get deployment  matrix-synapse  -n default  -o yaml > deployment.yaml
-    ```
+   ```yaml
+      app_service_config_files:
+         - /synapse/config/hookshot/registration.yml
+         - /synapse/config/telegram/registration.yml
+   ```
 
-    > Change default to match namespace where synapse server is.
-    > Change 1st matrix-synapse to match your configmap for synapse server and 2nd matrix-synapse to synapse server deployment name.
+   If you desire your app services to function in end-to-end encrypted rooms, include the subsequent lines:   
+   
+   ```yaml
+      experimental_features:
+         msc2409_to_device_messages_enabled: true
+         msc3202_device_masquerading: true
+         msc3202_transaction_extensions: true
+   ```
 
-2.  Open the `configMap.yaml` file and add the following lines in homeserver.yaml:
 
-    ```yaml
-    app_service_config_files:
-      - /synapse/config/hookshot/registration.yml
-      - /synapse/config/telegram/registration.yml
-    ```
+   2. Open the Synapse server deployment file within the dashboard. Locate the `volumes` section and append:
 
-3.  Open `deployment.yaml`
-    Find `volumes` value and add:
-
-    ```yaml
+   ```yaml
        - configMap:
           defaultMode: 420
           name: registration-hookshot
@@ -205,35 +201,20 @@ To update an already running Synapse server in Kubernetes, follow these steps:
           defaultMode: 420
           name: registration-telegram
        name: telegram
-    ```
+   ```
 
-    Find `volumeMounts` value and add:
+    Find the `volumeMounts` section and include:
 
-    ```yaml
+   ```yaml
        - mountPath: /synapse/config/hookshot
           name: hookshot
        - mountPath: /synapse/config/telegram
           name: telegram
-    ```
+   ```
 
-    Remember to not cause any syntax errors
+   Ensure that no syntax errors are introduced.
 
-4.  Apply updated files to the Kubernetes cluster by running:
-    ```bash
-       kubectl apply -f configMap.yaml --force
-       kubectl apply -f deployment.yaml --force
-    ```
-5.  Verify the status of the update by checking the rollout status of the deployment:
-
-    ```bash
-    kubectl rollout restart deployment matrix-synapse -n default
-    ```
-
-    > Change default to match namespace where synapse server is.
-
-Please ensure that you have the necessary access and permissions to perform the update process.
-
-</details>
+   3. Execute  `make update_synapse_server`.
 
 ## Installing matrix-hookshots
 

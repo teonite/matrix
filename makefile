@@ -75,6 +75,30 @@ check_registration_files:
 	make check_telegram_registration_file
 	echo "📝 All registration files exists!"
 
+# full deployments restart
+restart_deployments:
+	@kubectl rollout restart deployment $(synapse_deployment_name) -n $(namespace)
+	@echo "😴 Waiting for Synapse to start"
+	@success_count=0; \
+	while true; do \
+		status=$$(kubectl get deployment $(synapse_deployment_name) -n $(namespace) -o jsonpath='{.status.conditions[?(@.type=="Available")].status}'); \
+		if [[ "$$status" == "True" ]]; then \
+			((success_count++)); \
+			if ((success_count >= 3)); then \
+				echo "😁 Synapse is available"; \
+				break; \
+			fi; \
+		else \
+			success_count=0; \
+		fi; \
+		sleep 5; \
+	done
+	
+	
+	@make create_telegram_database
+	@kubectl rollout restart deployment -n ${namespace} ${hookshot_deployment_name}
+	@kubectl rollout restart deployment -n ${namespace} ${telegram_deployment_name}
+
 # ===================
 # element-web 
 # ===================
@@ -108,29 +132,11 @@ install_synapse_blank: check_dependencies check_namespace create_hookshot_regist
 	@if [ -z "$(RELEASE_EXIST_SYNAPSE)" ]; then \
 		cd ./ananace/charts/matrix-synapse/ && helm install ${synapse_deployment_name} . --values=values.yaml -n ${namespace}; \
 	fi
+	@make restart_deployments
 
-	@kubectl rollout restart deployment $(synapse_deployment_name) -n $(namespace)
-	@echo "😴 Waiting for Synapse to start"
-	@success_count=0; \
-	while true; do \
-		status=$$(kubectl get deployment $(synapse_deployment_name) -n $(namespace) -o jsonpath='{.status.conditions[?(@.type=="Available")].status}'); \
-		if [[ "$$status" == "True" ]]; then \
-			((success_count++)); \
-			if ((success_count >= 3)); then \
-				echo "😁 Synapse is available"; \
-				break; \
-			fi; \
-		else \
-			success_count=0; \
-		fi; \
-		sleep 5; \
-	done
-	
-	
-	@make create_telegram_database
-	@kubectl rollout restart deployment -n ${namespace} ${hookshot_deployment_name}
-	@kubectl rollout restart deployment -n ${namespace} ${telegram_deployment_name}
-
+# Updating synapse server to work with new appservices
+update_synapse_server: check_dependencies check_namespace create_hookshot_registration_file install_hookshot create_telegram_registration_file install_telegram 
+	@make restart_deployments
 
 # ===================
 # Hookshot
@@ -166,6 +172,7 @@ create_hookshot_config_file: check_namespace create_hookshot_registration_file
 	  	  kubectl create configmap ${hookshot_config_file_name} -n ${namespace} --from-file=${hookshot_config_file_path} --from-file=${hookshot_registration_values_path} --from-file=${hookshot_passkey_path} --from-file=${hookshot_githubkey_path} || \
 	  	  kubectl create configmap ${hookshot_config_file_name} -n ${namespace} --from-file=${hookshot_config_file_path} --from-file=${hookshot_registration_values_path} --from-file=${hookshot_passkey_path}; \
 	  }
+
 # make create_hookshot_ingress
 # Hookhost ingress
 create_hookshot_ingress: check_namespace
@@ -219,7 +226,7 @@ pull_hookshot_config:
 	@echo "😁 Now edit hookshot's config file inside temp/ folder. After this run make update_hookshot_config"
 
 # Push updated config
-update_hookshot_config:
+update_hookshot_config: check_dependencies check_namespace
 	@if [ -f ./temp/githubKey.pem ]; then \
 		kubectl create configmap ${hookshot_config_file_name} -n ${namespace} --from-file=./temp/config.yml  \
 		--from-file=./temp/registration.yml --from-file=./temp/passkey.pem --from-file=./temp/githubKey.pem | kubectl replace -f -;  \
@@ -227,8 +234,16 @@ update_hookshot_config:
 		kubectl create configmap ${hookshot_config_file_name} -n ${namespace} --from-file=./temp/config.yml \
 		--from-file=./temp/registration.yml | kubectl replace -f -;  \
 	fi
+	@make update_hookshot_registration
 	@kubectl rollout restart deployment ${hookshot_deployment_name} -n ${namespace}
 	@echo "🚀 Updated hookshot config"
+
+update_hookshot_registration:
+	@test -f ./temp/registration.yml || (echo "❌ File './temp/registration.yml' does not exist."; exit 1)
+	@echo "Creating registration-hookshot"
+	@kubectl create configmap registration-hookshot  --from-file=./temp/registration.yml --dry-run=client -n ${namespace} -o yaml  | kubectl apply -f -
+	@kubectl rollout restart deployment $(synapse_deployment_name) -n $(namespace)
+	@echo "🎉 Hookshot registration file updated!"
 
 
 # ===================
@@ -281,7 +296,6 @@ install_telegram: check_dependencies check_namespace create_telegram_registratio
 		cp ${telegram_deployment_values_file_path} ./mautrix-telegram/values.yaml &&  \
 		cd ./mautrix-telegram && helm install ${telegram_deployment_name} . --values=values.yaml  -n ${namespace} \
 	)
-
 
 
 
