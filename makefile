@@ -42,7 +42,6 @@ init:
 	@git submodule sync --recursive
 	@git submodule update --init --recursive
 
-
 	@echo "Copying .yaml templates to .yaml if files do not exist..."
 	@find config -type f -name '*.template' -exec sh -c 'target="$${0%.*}"; [ ! -f "$${target}" ] && cp "$${0}" "$${target}" && echo "Created $${target}"' {} \;
 
@@ -53,6 +52,12 @@ init:
 	@echo "Checking namespace..."
 	@make check_namespace
 	@echo "🌐 Namespace ready"
+	
+	@echo "Trying seting cluster"
+	@kubectl config use-context ${cluster_name}
+	@echo "🌐 Kubectl default cluster updated"
+
+	@make generate_tokens
 
 	@echo "🎉 Everything is set! Now edit .yaml and .yml files in config/ folder 🎉"
 
@@ -98,6 +103,19 @@ restart_deployments:
 	@make create_telegram_database
 	@kubectl rollout restart deployment -n ${namespace} ${hookshot_deployment_name}
 	@kubectl rollout restart deployment -n ${namespace} ${telegram_deployment_name}
+
+# Generates as and hs tokens
+generate_tokens:
+	@hookshot_as_token=$$(openssl rand -hex  32 );\
+    sed -i '' "s/as_token:.*/as_token: $$hookshot_as_token/" ./config/hookshot/registration.yml;\
+	hookshot_hs_token=$$(openssl rand -hex  32 );\
+    sed -i '' "s/hs_token:.*/hs_token: $$hookshot_hs_token/" ./config/hookshot/registration.yml;\
+	telegram_as_token=$$(openssl rand -hex  32 );\
+    sed -i '' "s/as_token:.*/as_token: $$telegram_as_token/" ./config/telegram/registration.yml;\
+	telegram_hs_token=$$(openssl rand -hex  32 );\
+    sed -i '' "s/hs_token:.*/hs_token: $$telegram_hs_token/" ./config/telegram/registration.yml
+	@echo "🔐 as_tokens and hs_tokens generated!"
+
 
 # ===================
 # element-web 

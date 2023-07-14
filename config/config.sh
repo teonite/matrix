@@ -2,8 +2,9 @@
 
 # =====
 # These configuration variables will be used when executing the makefile commands.
-# ===== 
-
+# =====
+ 
+cluster_name="minikube" # Set this to your cluster name
 namespace="openearth" # Set this to your kubernetes deployment name, you want to have everything installed
 
 # Element-web

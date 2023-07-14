@@ -90,7 +90,7 @@ Before integrating, ensure you have the following prerequisites:
 
 ## Getting Started
 
-To begin, you don`t necessarily need to modify any variables inside the `config/config.sh` file, but in most cases, it is recommended to consider changing the namespace.
+To begin, you don't necessarily need to modify any variables inside the `config/config.sh` file, but in most cases, it is recommended to consider changing the namespace.
 
 Follow the steps below to get started:
 
