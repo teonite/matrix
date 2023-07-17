@@ -1,5 +1,6 @@
 <!--
    This section contains badges, but they do not function in private repositories.
+-->
 
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
@@ -14,7 +15,6 @@
 [stars-url]: https://github.com/teonite/matrix/stargazers
 [issues-shield]: https://img.shields.io/github/issues/teonite/matrix.svg?style=for-the-badge
 [issues-url]: https://github.com/teonite/matrix/issues
--->
 
 <br />
 
