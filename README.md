@@ -22,7 +22,7 @@
 
    <h3 align="center">Appservices integration with <a href="https://github.com/matrix-org/synapse">synapse</a></h3>
    <p align="center">
-      <a href="https://teonite.com"><img src="https://drive.google.com/uc?export=view&id=1z0fxSsZztoaeVWxHw2MbPbuOHMe3OsqN" alt="build by teonite" /></a>
+      <a href="https://teonite.com" target="_blank"><img src="https://drive.google.com/uc?export=view&id=1z0fxSsZztoaeVWxHw2MbPbuOHMe3OsqN" alt="build by teonite" /></a>
    </p>
    <p align="center">
    This repository provides a simplified setup for <a href="https://github.com/vector-im/element-web">element-web</a> and <a href="https://github.com/matrix-org/synapse">synapse</a> with appservices. 
