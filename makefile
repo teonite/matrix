@@ -53,7 +53,7 @@ init:
 	@make check_namespace
 	@echo "🌐 Namespace ready"
 	
-	@echo "Trying seting cluster"
+	@echo "Trying to set up a cluster"
 	@kubectl config use-context ${cluster_name}
 	@echo "🌐 Kubectl default cluster updated"
 
