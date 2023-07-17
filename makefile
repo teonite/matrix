@@ -156,6 +156,22 @@ install_synapse_blank: check_dependencies check_namespace create_hookshot_regist
 update_synapse_server: check_dependencies check_namespace create_hookshot_registration_file install_hookshot create_telegram_registration_file install_telegram 
 	@make restart_deployments
 
+install_synapse: check_dependencies check_namespace
+	@test -f ${synapse_values_path} || (echo "❌ File '${synapse_values_path}' does not exist."; exit 1)
+	@cp ${synapse_values_path} ./ananace/charts/matrix-synapse/values.yaml
+	$(eval RELEASE_EXIST := $(shell kubectl get services -n ${namespace} -o json | jq -r '.items[] | select(.metadata.name | contains("postgresql")).metadata.name'))
+	@if [ -z "$(RELEASE_EXIST)" ]; then \
+		cd ./ananace/charts/matrix-synapse && helm dependency update; \
+	fi
+
+	$(eval RELEASE_EXIST_SYNAPSE := $(shell kubectl get deployments -n ${namespace}  -o json | jq -r '.items[] | select(.metadata.name | contains(${synapse_deployment_name})).metadata.name'))
+	@if [ -z "$(RELEASE_EXIST_SYNAPSE)" ]; then \
+		cd ./ananace/charts/matrix-synapse/ && helm install ${synapse_deployment_name} . --values=values.yaml -n ${namespace}; \
+	fi
+
+	@kubectl rollout restart deployment $(synapse_deployment_name) -n $(namespace)
+	@echo "Please note that the initial start of Synapse may require some additional time to complete."
+
 # ===================
 # Hookshot
 # ===================
@@ -307,15 +323,13 @@ check_telegram_registration_file:
 
 # make install_telegram
 # Installing mautrix-telegram
-install_telegram: check_dependencies check_namespace create_telegram_registration_file
+install_telegram: check_dependencies check_namespace create_telegram_registration_file create_telegram_database
 	$(eval RELEASE_EXIST := $(shell helm list -q -n ${namespace} | grep -Fx ${telegram_deployment_name}))
 	$(if $(RELEASE_EXIST), \
 		$(info Helm release name ${telegram_deployment_name} already exists.), \
 		cp ${telegram_deployment_values_file_path} ./mautrix-telegram/values.yaml &&  \
 		cd ./mautrix-telegram && helm install ${telegram_deployment_name} . --values=values.yaml  -n ${namespace} \
 	)
-
-
 
 ## ULTIMATE INSTALLATION 
 install_full:

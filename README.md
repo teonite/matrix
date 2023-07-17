@@ -52,15 +52,15 @@
       <a href="#synapse-installation">Synapse</a>
       <ul>
         <li><a href="#updating-an-already-existing-synapse-server-with-new-appservices">Updating an already existing synapse server with new appservices</a></li>
-        <li><a href="#installing-matrix-hookshots">Installing Hookshots</a></li>
+        <li><a href="#installing-matrix-hookshot">Installing hookshot</a></li>
         <li><a href="#installing-mautrix-telegram">Installing Mautrix Telegram</a></li>
       </ul>
     </li>
     <li>
       Updating configuration of already running appservices
       <ul>
-        <li><a href="#updating-running-matrix-hookshot-settings">Updating running matrix-hookshot settings</a></li>
-        <!-- <li><a href="#updating-running-mautrix-telegram-settings">Updating running mautrix-telegram settings</a></li> -->
+        <li><a href="#updating-running-matrix-hookshot-config">Updating running matrix-hookshot config</a></li>
+        <!-- <li><a href="#updating-running-mautrix-telegram-config">Updating running mautrix-telegram config</a></li> -->
       </ul>
     </li>
   </ol>
@@ -80,9 +80,9 @@ Using this repository, users can effortlessly configure and set up the necessary
 
 Before integrating, ensure you have the following prerequisites:
 
-- **Kubernetes**: Install and configure Kubernetes using `kubectl`. Refer to the [official Kubernetes documentation](https://kubernetes.io/docs/setup/) for instructions.
-
 - **kubectl**: Install kubectl, the command-line tool for Kubernetes clusters. Refer to the [official kubectl documentation](https://kubernetes.io/docs/tasks/tools/#kubectl) for instructions.
+
+- **Kubernetes**: Install and configure Kubernetes using `kubectl`. Refer to the [official Kubernetes documentation](https://kubernetes.io/docs/setup/) for instructions.
 
 - **Helm**: Install Helm for managing applications on Kubernetes clusters. Refer to the [official Helm documentation](https://helm.sh/docs/intro/install/) for instructions.
 
@@ -90,15 +90,15 @@ Before integrating, ensure you have the following prerequisites:
 
 ## Getting Started
 
-To begin, you don't necessarily need to modify any variables inside the `config/config.sh` file, but in most cases, it is recommended to consider changing the namespace.
+To begin, you don't necessarily need to modify any variables inside the `config/config.sh` file, but in most cases, it is recommended to consider changing the namespace and cluster name.
 
 Follow the steps below to get started:
 
-1. Run the `make init` command to create configuration files from templates. After that, proceed with the following steps:
+1. Run the `make init` command to create configuration files from templates. 
 
 2. Configure the files inside the `config/` directory.
 
-   > **NOTE:** In the files provided in the `config/` directory, make sure to replace all instances of the `openearth.space` domain with your domain name.
+   > **NOTE:** In the files provided in the `config/` directory, make sure to replace all instances of the **openearth.space** domain with your domain name.
 
 3. After configuring the files, if you want a full setup, execute the following command:
 
@@ -106,26 +106,26 @@ Follow the steps below to get started:
    make install_full
    ```
 
-   This command will install element-web, the synapse server, and all appservices.
+   This command will install element-web and synapse server with all appservices.
 
 <br>
 
-If you want to install appservices to an existing Synapse server, only install Element Web, or solely install the Synapse server without Element Web, please refer to the appropriate sections below:
+If you want to install appservices to an existing Synapse server, only install Element Web, or solely install the Synapse server, please refer to the appropriate sections below:
 
 - [element-web](#installing-element-web-separately)
 - [synapse](#synapse-installation)
-- [matrix-hookshot](#installing-matrix-hookshots)
+- [matrix-hookshot](#installing-matrix-hookshot)
 - [mautrix-telegram](#installing-mautrix-telegram)
 
 <br>
 
 ## Installing element-web separately
 
-Installing Element Web separately is a straightforward process. Follow the steps below:
+To install Element Web separately, follow these straightforward steps after ensuring that the namespace and cluster_name in the `config/config.sh` file align with your specific requirements:
 
 1. Run the `make init` command to generate the element-web configuration file.
 
-2. Edit the values inside `config/element-web.yaml`. Additionally, if you wish to install element-web in a different namespace, you can modify the `namespace` value inside `config/config.sh`. However, this step is not mandatory.
+2. Edit the values inside `config/element-web.yaml`.
 
 3. Execute the following command:
 
@@ -133,7 +133,7 @@ Installing Element Web separately is a straightforward process. Follow the steps
    make install_element_web
    ```
 
-   This command will initiate the installation of Element Web.
+   This command will initiate the installation of element-web, by default element-web will create ingress on ***chat.openearth.space***.
 
 <br>
 
@@ -143,25 +143,19 @@ To operate a federating Matrix server, you must have a publicly accessible subdo
 
 <br>
 
-To start install synapse server with appservices from scratch, follow these steps:
+If you wish not to install appservices with synapse server, follow those steps:
 
 1. Run the `make init` command to generate the necessary configuration files.
 
-2. Edit the following files:
-
-   - `/config/synapse.yaml`
-   - `/config/hookshot/`
-   - `/config/telegram/`
+2. Edit `/config/synapse.yaml` and ensure the removal of any undesired app services configuration file paths and volumes contained within.
 
 3. Execute the following command:
 
    ```bash
-   make install_synapse_blank
+   make install_synapse
    ```
 
-   This command will install Synapse along with all the configured appservices.
-
-> _**NOTE:**_ Additional configuration and setup may be required based on your specific requirements.
+   > _**NOTE:**_ Additional configuration and setup may be required based on your specific requirements.
 
 <br>
 
@@ -171,7 +165,7 @@ To start install synapse server with appservices from scratch, follow these step
 
    1. Begin by running `make init`. Modify the files within the `/config/` directory, excluding `element-web.yaml` and `synapse.yaml`. Remember to adjust the values in `config.sh` to match your Kubernetes setup.
 
-   2. Access the dashboard and locate the Synapse server config map. In the `homeserver.yaml` value, incorporate the following lines:
+   2. Access the kubernetes dashboard and locate the Synapse server config map. In the `homeserver.yaml` value, incorporate the following lines:
 
 
       ```yaml
@@ -190,7 +184,7 @@ To start install synapse server with appservices from scratch, follow these step
       ```
 
 
-   2. Open the Synapse server deployment file within the dashboard. Locate the `volumes` section and append:
+   2. Open the Synapse server deployment file within the kubernetes dashboard. Locate the `volumes` section and append:
 
       ```yaml
          - configMap:
@@ -218,12 +212,11 @@ To start install synapse server with appservices from scratch, follow these step
 
 <br>
 
-## Installing matrix-hookshots
+## Installing matrix-hookshot
 
-Automatization for this part come soon, for now you can follow :
+   Make sure your synapse server is running before installing matrix-hookshot. If it's not running, refer to [this section](#synapse-installation) for instructions.
 
-<details>
-   <summary>Manual installation</summary>
+   To match your Kubernetes setup, modify the values in `/config/config.sh` and then run `make init`. 
 
 1. Open `config/hookshot` folder and edit files inside as needed.
 
@@ -231,6 +224,41 @@ Automatization for this part come soon, for now you can follow :
    ```
    make install_hookshot
    ```
+
+3. Access the Kubernetes dashboard and find the config map for the Synapse server. Add the following lines to the homeserver.yaml value:
+
+      ```yaml
+         app_service_config_files:
+            - /synapse/config/hookshot/registration.yml
+      ```
+
+      If you desire hookshot to function in end-to-end encrypted rooms, include the subsequent lines:   
+      
+      ```yaml
+         experimental_features:
+            msc2409_to_device_messages_enabled: true
+            msc3202_device_masquerading: true
+            msc3202_transaction_extensions: true
+      ```
+
+
+4. Open the Synapse server deployment file within the kubernetes dashboard. Locate the `volumes` section and append:
+
+      ```yaml
+         - configMap:
+            defaultMode: 420
+            name: registration-hookshot
+         name: hookshot
+      ```
+
+      Find the `volumeMounts` section and include:
+
+      ```yaml
+            - mountPath: /synapse/config/hookshot
+               name: hookshot
+      ```
+
+      Ensure that no syntax errors are introduced.
 
 Keep in mind that hookshot need some time to start responding or joining rooms
 
@@ -242,28 +270,60 @@ Keep in mind that hookshot need some time to start responding or joining rooms
 
 ## Installing mautrix-telegram
 
-Automatization for this part come soon, for now you can follow :
 
-<details>
-   <summary>Manual installation</summary>
-   1. Open `config/telegram` folder and edit files inside as needed.
+   Make sure your synapse server is running before installing matrix-hookshot. If it's not running, refer to [this section](#synapse-installation) for instructions.
 
-2.  Execute:
-    ```
-    make install_telegram
-    ```
+   To match your Kubernetes setup, modify the values in `/config/config.sh` and then run `make init`. 
 
-Keep in mind that telegram need some time to start responding or joining rooms
+1. Open `config/telegram` folder and edit files inside as needed.
 
-> For more detailed setup instructions, refer to the [official guide](https://docs.mau.fi/bridges/python/telegram/index.html).
+2. Execute:
+   ```
+   make install_telegram
+   ```
 
-</details>
+3. Access the Kubernetes dashboard and find the config map for the Synapse server. Add the following lines to the homeserver.yaml value:
+
+      ```yaml
+         app_service_config_files:
+            - /synapse/config/telegram/registration.yml
+      ```
+
+      If you desire mautrix-telegram to function in end-to-end encrypted rooms, include the subsequent lines:   
+      
+      ```yaml
+         experimental_features:
+            msc2409_to_device_messages_enabled: true
+            msc3202_device_masquerading: true
+            msc3202_transaction_extensions: true
+      ```
+
+
+4. Open the Synapse server deployment file within the kubernetes dashboard. Locate the `volumes` section and append:
+
+      ```yaml
+         - configMap:
+            defaultMode: 420
+            name: registration-telegram
+         name: telegram
+      ```
+
+      Find the `volumeMounts` section and include:
+
+      ```yaml
+            - mountPath: /synapse/config/telegram
+               name: telegram
+      ```
+
+      Ensure that no syntax errors are introduced.
+
+
 
 <br>
 
-## Updating running matrix-hookshot settings
+## Updating running matrix-hookshot config
 
-   Updating already running matrix-hookshot settings is straight forward:
+   Updating already running matrix-hookshot config is straight forward:
 
    1. Execute `make pull_hookshot_config`
    2. Edit files inside `/temp/` directory
