@@ -74,6 +74,8 @@ The repository contains configurations and instructions for integrating the afor
 
 Using this repository, users can effortlessly configure and set up the necessary components to automate the process of running the Synapse server and all related application services.
 
+We utilized [Defguard](https://defguard.net/) as our OpenID Connect provider. For further information on its usage and setup instructions, please refer to their [documentation](https://defguard.gitbook.io/defguard/).
+
 <br>
 
 ## Prerequisites
