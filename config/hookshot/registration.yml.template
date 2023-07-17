@@ -1,8 +1,8 @@
 # Hookshot registration id. This can be anything, but must be unique within your synapse server
 id: matrix-hookshot
-# AppSecret token, this can be a random string, but i recommend using something secure
+# AppSecret token, this value is generated during the execution of 'make init'. If you wish to generate different tokens, feel free to use 'make generate_tokens'.
 as_token: aaaaaaaaaa
-# HomeserverSecret token, this can be a random string, but i recommend using something secure
+# HomeserverSecret token, this value is generated during the execution of 'make init'. If you wish to generate different tokens, feel free to use 'make generate_tokens'.
 hs_token: aaaaaaaaaa
 
 namespaces:

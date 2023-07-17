@@ -125,16 +125,20 @@ useStructuredLogging: false
 # Specify arbitrary Synapse configuration here;
 # Ref: https://github.com/matrix-org/synapse/blob/develop/docs/sample_config.yaml
 extraConfig:
-  app_service_config_files:
-    - /synapse/config/hookshot/registration.yml
-    - /synapse/config/telegram/registration.yml    
 
+  # To enable compatibility between app services and Synapse server, the configuration files of app services must include the necessary components.
+  app_service_config_files:
+    - /synapse/config/hookshot/registration.yml # Delete this line if you don't install hookshot
+    - /synapse/config/telegram/registration.yml # Delete this line if you don't install mautrix-telegram
+
+  # Bots need those features to work properly in e2e encrypted rooms.
   experimental_features:
     msc3202_device_masquerading: true
     msc3202_transaction_extensions: true
     msc2409_to_device_messages_enabled: true
 
   # Defguard auth section
+  # Ref: https://defguard.gitbook.io/defguard/features/openid-connect/proxmox-1
   oidc_providers:
     - authorization_endpoint: https://id.openearth.space/api/v1/oauth/authorize # Change to your defguard authorization endpoint
       client_id: <client_id> # Change to your defguard application client_id

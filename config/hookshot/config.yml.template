@@ -115,12 +115,12 @@ bot:
 serviceBots:
   - localpart: _gitlab_
     displayname: Gitlab
-    avatar: mxc://matrix.org/VcHetqlhJgSUCSvnaGzabRBv
+    avatar: mxc://matrix.org/roSfMebGAgmzWLVCKXicYBtW
     prefix: "!gitlab"
     service: gitlab
   - localpart: _github_
     displayname: Github
-    avatar: mxc://matrix.org/jDHuRxOuiYZNNEwEnMWNuaEz
+    avatar: mxc://matrix.org/eUqGdgibcJhStbKODYfHRIUr
     prefix: "!github"
     service: github
   - localpart: _figma_
