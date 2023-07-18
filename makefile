@@ -15,29 +15,30 @@ help:
 	@printf "After configuration, run the command ${BLUE}make install_element_web${CE} to install element-web.\n\n"
 	
 	@printf "\nS Y N A P S E \n"
-	@printf "After configuring files inside the config folder, run ${BLUE}make install_synapse_blank${CE} for Synapse installation with Hookshot and Mautrix-Telegram.\n"
-# add update
+	@printf "After configuring synapse.yaml inside the config folder, run ${BLUE}make install_synapse${CE} for Synapse installation without any appservices.\n"
+	@printf "To install Synapse with appservices, please configure all files within the config folder, excluding element-web.yaml, and execute ${BLUE}make install_synapse_blank${CE}.\n"
 
 	@printf "\nH O O K S H O T \n"
 	@printf "After configuring files inside the config/hookshot folder, run ${BLUE}make install_hookshot${CE} for Hookshot installation.\n"
-# add update
 
 	@printf "\nM A U T R I X - T E L E G R A M \n"
 	@printf "After configuring files inside the config/telegram folder, run ${BLUE}make install_telegram${CE} for mautrix-telegram installation.\n"
-# add update
 
 	@printf "\nF U L L \n"
 	@printf "If you want to install everything in the fastest way, run ${BLUE}make init${CE}, configure files inside config folder and then execute ${BLUE}make install_full${CE}\n"
 	@printf "\n"
+	
+	@printf "If you want to see all available commands run: make all_commands\n"
+
+all_commands:
+	@fgrep -h "##" $(MAKEFILE_LIST) | sed -e 's/\(:.*\#\#\)/:\t/' | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//' | column -t -s ':'
+
+##--------------------
+##Basic functionalities
+##--------------------
 
 
-# ===================
-# Basic functionalities
-# ===================
-
-# make init 
-# Pulling submodules and copy templates
-init:
+init:  ## Initialize project installation and configuration
 	@echo "Pulling GitHub submodules..."
 	@git submodule sync --recursive
 	@git submodule update --init --recursive
@@ -61,27 +62,20 @@ init:
 
 	@echo "🎉 Everything is set! Now edit .yaml and .yml files in config/ folder 🎉"
 
-# make check_namespace 
-# Checking if namespace exist, if not creates one
-check_namespace:
+check_namespace: ## Check if namespace exist, if not creates one
 	@kubectl get namespace ${namespace} > /dev/null 2>&1 || (echo "Namespace '${namespace}' does not exist, creating...";  kubectl create namespace ${namespace})
 
-# make check_dependencies
-# Checking dependencies
-check_dependencies:
+check_dependencies: ## Chceck dependencies
 	@which helm > /dev/null 2>&1 || { echo "Helm command not found. Please install Helm and make sure it's in your system's PATH."; exit 1; }
 	@which kubectl > /dev/null 2>&1 || { echo "Kubectl command not found. Please install Helm and make sure it's in your system's PATH."; exit 1; }
 	@kubectl cluster-info > /dev/null 2>&1 || { echo "Cannot connect to Kubernetes cluster. Please make sure you have the necessary configuration and connectivity."; exit 1; }
 
-# make check_registration_files
-# Check all required registration files 
-check_registration_files:
+check_registration_files: ## Check all required registration files 
 	make check_hookshot_registration_file
 	make check_telegram_registration_file
 	echo "📝 All registration files exists!"
 
-# full deployments restart
-restart_deployments:
+restart_deployments: ## Restart all related deployments
 	@kubectl rollout restart deployment $(synapse_deployment_name) -n $(namespace)
 	@echo "😴 Waiting for Synapse to start"
 	@success_count=0; \
@@ -104,8 +98,7 @@ restart_deployments:
 	@kubectl rollout restart deployment -n ${namespace} ${hookshot_deployment_name}
 	@kubectl rollout restart deployment -n ${namespace} ${telegram_deployment_name}
 
-# Generates as and hs tokens
-generate_tokens:
+generate_tokens: ## Generates as and hs tokens
 	@hookshot_as_token=$$(openssl rand -hex  32 );\
     sed -i '' "s/as_token:.*/as_token: $$hookshot_as_token/" ./config/hookshot/registration.yml;\
 	hookshot_hs_token=$$(openssl rand -hex  32 );\
@@ -116,14 +109,11 @@ generate_tokens:
     sed -i '' "s/hs_token:.*/hs_token: $$telegram_hs_token/" ./config/telegram/registration.yml
 	@echo "🔐 as_tokens and hs_tokens generated!"
 
+##--------------------
+##Element-web commands:
+##--------------------
 
-# ===================
-# element-web 
-# ===================
-
-# make install_element_web
-# Installs element-web
-install_element_web: check_dependencies check_namespace
+install_element_web: check_dependencies check_namespace ## Install element-web
 	@test -f ${element_web_values_path} || (echo "❌ File '${element_web_values_path}' does not exist."; exit 1)
 	$(eval RELEASE_EXIST := $(shell helm list -q -n ${namespace} | grep -Fx ${element_deployment_name}))
 	$(if $(RELEASE_EXIST), \
@@ -132,14 +122,11 @@ install_element_web: check_dependencies check_namespace
 		cd ./ananace/charts/element-web &&  helm install ${element_deployment_name} . --values=values.yaml -n ${namespace} \
 	)
 
-# ===================
-# Synapse
-# ===================
+##--------------------
+##Synapse commands:
+##--------------------
 
-# make install_synapse_ublank
-# Installs synapse server with hookshot and mautrix-telegram
-install_synapse_blank: check_dependencies check_namespace create_hookshot_registration_file install_hookshot create_telegram_registration_file install_telegram 
-	@test -f ${synapse_values_path} || (echo "❌ File '${synapse_values_path}' does not exist."; exit 1)
+install_synapse_blank: check_dependencies check_namespace create_hookshot_registration_file install_hookshot create_telegram_registration_file install_telegram  ## Install synapse server with hookshot and mautrix-telegram
 	@cp ${synapse_values_path} ./ananace/charts/matrix-synapse/values.yaml
 	$(eval RELEASE_EXIST := $(shell kubectl get services -n ${namespace} -o json | jq -r '.items[] | select(.metadata.name | contains("postgresql")).metadata.name'))
 	@if [ -z "$(RELEASE_EXIST)" ]; then \
@@ -152,11 +139,10 @@ install_synapse_blank: check_dependencies check_namespace create_hookshot_regist
 	fi
 	@make restart_deployments
 
-# Updating synapse server to work with new appservices
-update_synapse_server: check_dependencies check_namespace create_hookshot_registration_file install_hookshot create_telegram_registration_file install_telegram 
+update_synapse_server: check_dependencies check_namespace create_hookshot_registration_file install_hookshot create_telegram_registration_file install_telegram ## Update synapse server to work with new appservices
 	@make restart_deployments
 
-install_synapse: check_dependencies check_namespace
+install_synapse: check_dependencies check_namespace ##   ## Install synapse server without appservices
 	@test -f ${synapse_values_path} || (echo "❌ File '${synapse_values_path}' does not exist."; exit 1)
 	@cp ${synapse_values_path} ./ananace/charts/matrix-synapse/values.yaml
 	$(eval RELEASE_EXIST := $(shell kubectl get services -n ${namespace} -o json | jq -r '.items[] | select(.metadata.name | contains("postgresql")).metadata.name'))
@@ -172,13 +158,11 @@ install_synapse: check_dependencies check_namespace
 	@kubectl rollout restart deployment $(synapse_deployment_name) -n $(namespace)
 	@echo "Please note that the initial start of Synapse may require some additional time to complete."
 
-# ===================
-# Hookshot
-# ===================
+##--------------------
+##Hookshot commands:
+##--------------------
 
-# make create_hookshot_registration_file
-# Hookshot registration file
-create_hookshot_registration_file: check_namespace
+create_hookshot_registration_file: check_namespace ## Create hookshot registration file
 	@test -f ${hookshot_registration_values_path} || (echo "❌ File '${hookshot_registration_values_path}' does not exist."; exit 1)
 	@kubectl get configmap registration-hookshot -n ${namespace} >/dev/null 2>&1 && \
 	  (echo "registration-hookshot already exists."; exit 0) || \
@@ -186,17 +170,13 @@ create_hookshot_registration_file: check_namespace
 	   (echo "Creating registration-hookshot"; kubectl create configmap registration-hookshot  --from-file=${hookshot_registration_values_path} --dry-run=client -n ${namespace} -o yaml  | kubectl apply -f -)) || \
 	  (echo "File '${hookshot_registration_values_path}' does not exist."; exit 1)
 
-# make check_hookshot_registration_file
-# Checking hookshot registration file
-check_hookshot_registration_file: check_namespace
+check_hookshot_registration_file: check_namespace ## Check if hookshot registration file exists
 	@kubectl get namespace ${namespace} > /dev/null 2>&1 || (echo "Namespace '${namespace}' does not exist.";)
 	@kubectl get configmap -n ${namespace} registration-hookshot >/dev/null 2>&1 && \
 	  (echo "📝 registration-hookshot already exists."; exit) || \
 	  (echo "❌ registration-hookshot do NOT exist. Edit ${hookshot_registration_values_path} and run: make create_hookshot_registration_file"; exit 1;)
 
-# make create_hookshot_config_file
-# Hookshot config file
-create_hookshot_config_file: check_namespace create_hookshot_registration_file
+create_hookshot_config_file: check_namespace create_hookshot_registration_file ## Create hookshot config file
 	@kubectl get configmap -n ${namespace} ${hookshot_config_file_name} >/dev/null 2>&1 && \
 	  (echo "📝 Hookshot config already exists."; exit 0) || \
 	  { \
@@ -207,37 +187,29 @@ create_hookshot_config_file: check_namespace create_hookshot_registration_file
 	  	  kubectl create configmap ${hookshot_config_file_name} -n ${namespace} --from-file=${hookshot_config_file_path} --from-file=${hookshot_registration_values_path} --from-file=${hookshot_passkey_path}; \
 	  }
 
-# make create_hookshot_ingress
-# Hookhost ingress
-create_hookshot_ingress: check_namespace
+create_hookshot_ingress: check_namespace ## Create hookshot's ingress
 	@test -f ${hookshot_ingress_file_path} && \
 		(kubectl apply -f ${hookshot_ingress_file_path})|| \
 		(echo "❌ File '${hookshot_ingress_file_path}' does not exist."; exit 1)
 
-
-# pull hookshot deployment
-update_hookshot_deployment: check_dependencies check_namespace
+update_hookshot_deployment: check_dependencies check_namespace ## Update hookshot deployment ( bind volumes )
 	@kubectl get deployment -n ${namespace} ${hookshot_deployment_name} -o yaml | \
 		awk '/volumes:/ { print; print"      - name: e2e-keys\n        persistentVolumeClaim:\n          claimName: hookshot-e2e-keys-claim"; next }1' | \
 		awk '/volumeMounts:/ { print; print "        - mountPath: /data/e2e\n          name: e2e-keys"; next }1' | \
 		kubectl apply -f - --force
 	@echo "✨Deployment updated\n"
 
-# Create volumes for hookshot e2e keys
-create_hookshot_volumes: check_dependencies check_namespace
+create_hookshot_volumes: check_dependencies check_namespace ## Create volumes for hookshot encryption keys
 	@test -f ${hookshot_volumes_file_path} || (echo "❌ File '${hookshot_volumes_file_path}' does not exist."; exit 1); \
 	kubectl apply -f ${hookshot_volumes_file_path}
 	@echo "📝 hookshot volumes created"
 
-# Redis for hookshot installation
-install_hookshot_redis: check_dependencies check_namespace
+install_hookshot_redis: check_dependencies check_namespace ## Install hookshot's redis
 	@helm ls --namespace $(namespace) -q | grep -q "^hookshot-redis$$" || \
 		(helm install hookshot-redis oci://registry-1.docker.io/bitnamicharts/redis --set auth.enabled=false -n $(namespace) && echo "📝 Redis installed") && \
 		(echo "📝 Readi already installed")
 
-# make install_hookshot
-# Hookshot installation
-install_hookshot: check_dependencies check_namespace create_hookshot_ingress create_hookshot_config_file install_hookshot_redis create_hookshot_volumes
+install_hookshot: check_dependencies check_namespace create_hookshot_ingress create_hookshot_config_file install_hookshot_redis create_hookshot_volumes ## Install hookshot
 	@sed -i.bak 's/^appVersion:.*/appVersion: "latest"/' ./matrix-hookshot/helm/hookshot/Chart.yaml && rm ./matrix-hookshot/helm/hookshot/Chart.yaml.bak
 	$(eval RELEASE_EXIST := $(shell helm list -q -n ${namespace} | grep -Fx ${hookshot_deployment_name}))
 	$(if $(RELEASE_EXIST), \
@@ -248,9 +220,7 @@ install_hookshot: check_dependencies check_namespace create_hookshot_ingress cre
 	@make update_hookshot_deployment
 	@kubectl rollout restart deployment -n ${namespace} ${hookshot_deployment_name}
 
-
-# pull hookshot config
-pull_hookshot_config:
+pull_hookshot_config: ## Pull hookshot config from kubernetes
 	@mkdir -p ./temp
 	@kubectl get configmap ${hookshot_config_file_name} -n ${namespace} -o json > ./temp/temp.json
 	@cat ./temp/temp.json | jq -r '.data | keys[]' | while read -r key; do \
@@ -259,8 +229,7 @@ pull_hookshot_config:
 	@rm ./temp/temp.json
 	@echo "😁 Now edit hookshot's config file inside temp/ folder. After this run make update_hookshot_config"
 
-# Push updated config
-update_hookshot_config: check_dependencies check_namespace
+update_hookshot_config: check_dependencies check_namespace ## Update hookshot's config 
 	@if [ -f ./temp/githubKey.pem ]; then \
 		kubectl create configmap ${hookshot_config_file_name} -n ${namespace} --from-file=./temp/config.yml  \
 		--from-file=./temp/registration.yml --from-file=./temp/passkey.pem --from-file=./temp/githubKey.pem | kubectl replace -f -;  \
@@ -272,7 +241,7 @@ update_hookshot_config: check_dependencies check_namespace
 	@kubectl rollout restart deployment ${hookshot_deployment_name} -n ${namespace}
 	@echo "🚀 Updated hookshot config"
 
-update_hookshot_registration:
+update_hookshot_registration: ## Update hookshot's registration file 
 	@test -f ./temp/registration.yml || (echo "❌ File './temp/registration.yml' does not exist."; exit 1)
 	@echo "Creating registration-hookshot"
 	@kubectl create configmap registration-hookshot  --from-file=./temp/registration.yml --dry-run=client -n ${namespace} -o yaml  | kubectl apply -f -
@@ -280,13 +249,11 @@ update_hookshot_registration:
 	@echo "🎉 Hookshot registration file updated!"
 
 
-# ===================
-# mautrix-telegram
-# ===================
+##--------------------
+##mautrix-telegram commands:
+##--------------------
 
-# make create_telegram_database
-# mautrix-telegram database create
-create_telegram_database: check_dependencies check_namespace
+create_telegram_database: check_dependencies check_namespace ## Create database for mautrix-telegram
 	@POSTGRES_POD=$$(kubectl get pods -n $(namespace) -o json | jq -r '.items[] | select(.metadata.name | contains("postgresql")).metadata.name'); \
 	if [ -z "$$POSTGRES_POD" ]; then \
 		echo "❌ Cannot create database. PostgreSQL pod not found. Follow steps in README.md/#mautrix-telegram-database"; \
@@ -303,27 +270,20 @@ create_telegram_database: check_dependencies check_namespace
 		fi \
 	fi
 
-
-# make create_telegram_registration_file
-# mautrix-telegram registration file
-create_telegram_registration_file: check_namespace
+create_telegram_registration_file: check_namespace ## Create mautrix-telegram registration file
 	@kubectl get configmap registration-telegram -n ${namespace} >/dev/null 2>&1 && \
 	  (echo "📝 registration-telegram already exists."; exit 0) || \
 	  (test -f ${telegram_registration_values_path} && \
 	   (echo "Creating registration-telegram"; kubectl create configmap registration-telegram  --from-file=${telegram_registration_values_path} --dry-run=client -n ${namespace} -o yaml  | kubectl apply -f -)) || \
 	  (echo "❌ File '${telegram_registration_values_path}' does not exist."; exit 1)
-
-# make check_telegram_registration_file
-# Checking mautrix-telegram registration file
-check_telegram_registration_file: 
+	  
+check_telegram_registration_file:  ## Check if mautrix-telegram registration file exists
 	@kubectl get namespace ${namespace} > /dev/null 2>&1 || (echo "Namespace '${namespace}' does not exist.";)
 	@kubectl get configmap -n ${namespace} registration-telegram >/dev/null 2>&1 && \
 	  (echo "📝 registration-telegram already exists."; exit) || \
 	  (echo "❌ registration-telegram do NOT exist. Edit ${telegram_registration_values_path} and run: make create_telegram_registration_file"; exit 1;)
 
-# make install_telegram
-# Installing mautrix-telegram
-install_telegram: check_dependencies check_namespace create_telegram_registration_file create_telegram_database
+install_telegram: check_dependencies check_namespace create_telegram_registration_file create_telegram_database ## Install mautrix-telegram
 	$(eval RELEASE_EXIST := $(shell helm list -q -n ${namespace} | grep -Fx ${telegram_deployment_name}))
 	$(if $(RELEASE_EXIST), \
 		$(info Helm release name ${telegram_deployment_name} already exists.), \
@@ -331,8 +291,10 @@ install_telegram: check_dependencies check_namespace create_telegram_registratio
 		cd ./mautrix-telegram && helm install ${telegram_deployment_name} . --values=values.yaml  -n ${namespace} \
 	)
 
-## ULTIMATE INSTALLATION 
-install_full:
+##--------------------
+##Full installation
+##--------------------
+install_full: ## Install element-web and synapse with all appservices
 	@make install_element_web
 	@make install_synapse_blank
 
