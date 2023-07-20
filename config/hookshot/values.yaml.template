@@ -6,9 +6,9 @@ replicaCount: 1
 
 image:
   # Repository to pull hookshot image from
-  repository: halfshot/matrix-hookshot
+  repository: niepytaj/matrix-hookshot
   # Pull policy for Hookshot image
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   # Image tag to pull. Defaults to chart's appVersion value as set in Chart.yaml
   tag:
 
