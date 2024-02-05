@@ -70,7 +70,7 @@
 
 ## About the repository
 
-The purpose of this repository is to provide an **easy** way to **automate** the launch process using a combination of [element-web](https://github.com/vector-im/element-web), [synapse server](https://github.com/matrix-org/synapse), [matrix-hookshot](https://github.com/matrix-org/matrix-hookshot) and [mautrix-telegram](https://github.com/mautrix/telegram). This project was designed specifically to meet the needs of the [OpenEarth.Space](https://openearth.space) project.
+The purpose of this repository is to provide an **easy** way to **automate** the launch process using a combination of [element-web](https://github.com/vector-im/element-web), [synapse server](https://github.com/matrix-org/synapse), [matrix-hookshot](https://github.com/matrix-org/matrix-hookshot) and [mautrix-telegram](https://github.com/mautrix/telegram).
 
 The repository contains configurations and instructions for integrating the aforementioned application services, allowing external services to interact with the Matrix network. This enables automation of various tasks and workflows.
 
